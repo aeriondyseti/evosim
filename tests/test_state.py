@@ -114,3 +114,42 @@ def test_fingerprint_stable_and_sensitive():
 def test_fingerprint_detects_tick_change():
     s = State.create(make_schema(), capacity=4)
     assert state_fingerprint(s) != state_fingerprint(s.increment_tick())
+
+
+# --- fields (environment layers) --------------------------------------------
+
+def test_create_with_fields():
+    grid = jnp.zeros((3, 3), dtype=jnp.int32)
+    s = State.create(make_schema(), capacity=4, fields={"cells": grid})
+    assert s.has_field("cells")
+    assert s.get_field("cells").shape == (3, 3)
+
+
+def test_set_field_immutable_and_added():
+    s = State.create(make_schema(), capacity=2)
+    assert not s.has_field("res")
+    s2 = s.set_field("res", jnp.ones((2, 2)))
+    assert s2.has_field("res")
+    assert not s.has_field("res")  # original unchanged
+
+
+def test_fields_pytree_roundtrip_and_jit():
+    grid = jnp.arange(9).reshape(3, 3)
+    s = State.create(make_schema(), 4, fields={"g": grid})
+    leaves, treedef = jax.tree_util.tree_flatten(s)
+    s2 = jax.tree_util.tree_unflatten(treedef, leaves)
+    assert np.array_equal(np.asarray(s2.get_field("g")), np.asarray(grid))
+
+    @jax.jit
+    def bump(state):
+        return state.set_field("g", state.get_field("g") + 1)
+
+    out = bump(s)
+    assert np.array_equal(np.asarray(out.get_field("g")), np.asarray(grid) + 1)
+
+
+def test_fingerprint_sensitive_to_fields():
+    s = State.create(make_schema(), 4, fields={"g": jnp.zeros((2, 2))})
+    f1 = state_fingerprint(s)
+    s2 = s.set_field("g", jnp.ones((2, 2)))
+    assert state_fingerprint(s2) != f1

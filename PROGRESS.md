@@ -4,7 +4,7 @@
 > (context may have been compacted). Update it after every chunk of work.
 > Source of truth for design = `SPEC.md`.
 
-Last updated: 2026-06-28 (iteration 4 — backend + population done)
+Last updated: 2026-06-28 (iteration 5 — system + scheduler done; PHASE 1 COMPLETE)
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +
@@ -67,7 +67,8 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [x] `state.py` (State PyTree, registration as JAX pytree) + tests (11 tests)
 - [x] `backend.py` (abstraction + JAX backend) + tests (8 tests)
 - [x] `population.py` (grow/spawn/death/compaction, deterministic claim) + tests (10 tests)
-- [ ] `system.py` + `scheduler.py` (phased stages, tick via scan) + tests
+- [x] `system.py` + `scheduler.py` (phased stages, tick via scan) + tests (11 tests)
+- [x] `state.py` extended with environment `fields` (grids/layers) + tests (4 tests)
 
 ### Phase 2 — World
 - [ ] `world/base.py` (World protocol)
@@ -100,6 +101,12 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [ ] Full `uv run pytest` green; final review pass
 
 ## Running log (newest first)
+- iter 5 (system + scheduler; PHASE 1 DONE): added env `fields` dict to State (needed for
+  agent-less sims like Conway). `system.py` (System/Context/@system, DEFAULT_STAGES =
+  sense/decide/act/interact/spawn/death/environment/cleanup). `scheduler.py` (stage-ordered
+  registration, per-system counter-RNG keys, make_tick/step/run via scan, record callback).
+  Public API exported in __init__. 74 tests pass. Next: world/base.py + world/grid.py
+  (toric grid, cell/Moore queries, cell binning).
 - iter 4 (backend + population): `backend.py` Backend/JAXBackend (jit/scan/vmap/xp/devices) +
   registry/use_backend (8 tests). `population.py` deterministic spawn (free-slot claim via
   argsort+cumsum, overflow drop, contiguous ids), kill, compact (stable), grow/grow_to_fit
