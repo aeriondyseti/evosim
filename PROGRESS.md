@@ -4,7 +4,7 @@
 > (context may have been compacted). Update it after every chunk of work.
 > Source of truth for design = `SPEC.md`.
 
-Last updated: 2026-06-28 (iteration 9 — sim assembly done; PHASE 5 COMPLETE — LIBRARY DONE)
+Last updated: 2026-06-28 (iteration 10 — conway + foragers demos done; 2/3 demos)
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +
@@ -101,7 +101,10 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [x] `examples/conway.py` + test — glider/blinker/block golden-masters PASS (6 tests).
       NOTE: demos live in src/evosim/examples/ (importable as evosim.examples.*, runnable
       via `python -m evosim.examples.conway`).
-- [ ] `examples/foragers.py` + test (runs, population dynamics, evolution signal)
+- [x] `examples/foragers.py` + test — full ALife: taxis move, food-field eat w/ lottery
+      arbitration, reproduction+mutation, metabolism/death. Emergent selection: mean
+      efficiency gene rises ~0 -> 0.06 over 400 steps; pop stabilizes at carrying capacity.
+      5 tests (survival, births, selection signal, determinism). VALIDATED.
 - [ ] `examples/ga_benchmark.py` + test (fitness improves over generations)
 
 ### Phase 7 — Hardening
@@ -111,6 +114,10 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [ ] Full `uv run pytest` green; final review pass
 
 ## Running log (newest first)
+- iter 10 (demos 1+2): conway.py (glider/blinker/block golden-masters, 6 tests) + foragers.py
+  (full ALife, emergent selection signal confirmed: eff gene 0->0.06; 5 tests). 158 tests pass.
+  Demos in src/evosim/examples/. Next: ga_benchmark.py (explicit-fitness GA path), then
+  Phase 7 hardening (perf smoke, README).
 - iter 9 (sim assembly; PHASE 5 DONE — LIBRARY FEATURE-COMPLETE): sim.py Simulation
   (run/run_recorded/run_with_growth/run_ensemble vmap-over-worlds), 7 tests. 147 tests pass.
   Library core is complete; remaining = Phase 6 demos (conway, foragers, ga_benchmark) +
