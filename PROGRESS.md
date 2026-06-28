@@ -4,7 +4,7 @@
 > (context may have been compacted). Update it after every chunk of work.
 > Source of truth for design = `SPEC.md`.
 
-Last updated: 2026-06-28 (iteration 7 — genetics + interaction done; PHASE 3 COMPLETE)
+Last updated: 2026-06-28 (iteration 8 — observability + persistence done; PHASE 4 COMPLETE)
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +
@@ -86,9 +86,12 @@ tests/             unit tests per module + determinism golden-masters + perf smo
       mutual_match pairing, lottery_priorities) + tests (12)
 
 ### Phase 4 — Observability & persistence
-- [ ] `metrics.py` (reducers) + tests
-- [ ] `recorders.py` (interface + metrics + snapshot) + tests
-- [ ] `checkpoint.py` (save/load, deterministic resume golden-master) + tests
+- [x] `metrics.py` (masked_mean/var, population, mean/var/sum_of, genetic_diversity,
+      MetricSet w/ compute + record_fn, standard builder) + tests (7)
+- [x] `recorders.py` (Recorder, MetricsRecorder, SnapshotRecorder+save_npz, run_recorded
+      host loop) + tests (6). NOTE: recorders fire on 1st/(1+every)/... invocation.
+- [x] `checkpoint.py` (npz save/load full state+fields+rng+schema, deterministic resume
+      golden-master PASSES) + tests (4)
 
 ### Phase 5 — Assembly
 - [ ] `sim.py` (Simulation assembly, run loop, vmap-over-worlds) + tests
@@ -105,6 +108,11 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [ ] Full `uv run pytest` green; final review pass
 
 ## Running log (newest first)
+- iter 8 (observability + persistence; PHASE 4 DONE): metrics.py (on-device reducers +
+  MetricSet), recorders.py (MetricsRecorder/SnapshotRecorder + run_recorded host loop),
+  checkpoint.py (npz save/load, deterministic resume golden-master passes). Exported all.
+  140 tests pass. Next: Phase 5 assembly — sim.py (Simulation wrapper, run loop with growth,
+  vmap-over-worlds primitive). Then Phase 6 demos.
 - iter 7 (genetics + interaction; PHASE 3 DONE): operators/{mutation,crossover,selection}
   (19 tests) + interaction.py (resolve_claims deterministic scatter-min arbitration with
   index tie-break, resolve_cell_claims, mutual_match, lottery_priorities; 12 tests).

@@ -7,7 +7,17 @@ build progresses; import submodules directly for anything not re-exported here.
 
 from __future__ import annotations
 
-from . import backend, interaction, operators, population, rng, world
+from . import (
+    backend,
+    checkpoint,
+    interaction,
+    metrics,
+    operators,
+    population,
+    recorders,
+    rng,
+    world,
+)
 from .backend import Backend, JAXBackend, get_backend, use_backend
 from .schema import RESERVED_FIELDS, Field, Schema, enable_x64
 from .scheduler import Scheduler
@@ -44,4 +54,7 @@ __all__ = [
     "world",
     "operators",
     "interaction",
+    "metrics",
+    "recorders",
+    "checkpoint",
 ]
