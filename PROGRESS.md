@@ -4,7 +4,7 @@
 > (context may have been compacted). Update it after every chunk of work.
 > Source of truth for design = `SPEC.md`.
 
-Last updated: 2026-06-28 (iteration 6 — world layer done; PHASE 2 COMPLETE)
+Last updated: 2026-06-28 (iteration 7 — genetics + interaction done; PHASE 3 COMPLETE)
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +
@@ -82,7 +82,8 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [x] `operators/mutation.py` (gaussian/uniform/bitflip) + tests
 - [x] `operators/crossover.py` (clone/uniform/one_point/n_point/blend) + tests
 - [x] `operators/selection.py` (tournament/roulette/truncation/elitism) + tests (19 total)
-- [ ] `interaction.py` (pairing + deterministic conflict resolution) + tests
+- [x] `interaction.py` (resolve_claims scatter-min arbitration, resolve_cell_claims,
+      mutual_match pairing, lottery_priorities) + tests (12)
 
 ### Phase 4 — Observability & persistence
 - [ ] `metrics.py` (reducers) + tests
@@ -104,6 +105,11 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [ ] Full `uv run pytest` green; final review pass
 
 ## Running log (newest first)
+- iter 7 (genetics + interaction; PHASE 3 DONE): operators/{mutation,crossover,selection}
+  (19 tests) + interaction.py (resolve_claims deterministic scatter-min arbitration with
+  index tie-break, resolve_cell_claims, mutual_match, lottery_priorities; 12 tests).
+  operators+interaction exported. 124 tests pass. Next: Phase 4 observability/persistence —
+  metrics.py, recorders.py, checkpoint.py.
 - iter 6 (world; PHASE 2 DONE): `world/base.py` (World ABC), `world/grid.py` (ToricGrid2D
   cell-binning + toric neighborhood ops, 13 tests), `world/fields.py` (decay/regrow/diffuse/
   map_field/life_like, 6 tests). Conway rule already validated via life_like. world exported
