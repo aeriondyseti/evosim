@@ -10,15 +10,21 @@ Last updated: 2026-06-28 (iteration 12 — PHASE 7 DONE; PROJECT COMPLETE ✅)
 ## Post-completion: added PyGame visualization (evosim.viz). 177 tests pass.
 
 ### Visualization (added after core completion)
-- LIBRARY: `src/evosim/viz/render.py` — pure-numpy, GUI-agnostic renderers (GridRenderer
-  heatmaps, AgentRenderer rasterization, colormaps, compose). `evosim.viz` has NO GUI dep.
+- LIBRARY: `src/evosim/viz/render.py` — pure-numpy, GUI-agnostic renderers: GridRenderer
+  heatmaps, AgentRenderer rasterization, ScatterRenderer/scatter_image (continuous/non-grid
+  point clouds), colormaps, compose. `evosim.viz` has NO GUI dep (needs no extra).
 - EXAMPLE: `src/evosim/examples/pygame_viewer.py` — run_live (window loop; legend toggle H,
-  pause SPACE, step S/., speed arrows, quit ESC/Q) + PygameViewer Recorder. PyGame is shipped
-  as an example of consuming the viz renderers (like conway demos the core), NOT in the library.
-- `viz` extra (pygame) in pyproject. Conway + foragers demos take `--view` (import run_live from
-  examples.pygame_viewer; renderers from evosim.viz).
-- tests: test_viz.py (renderers, no pygame) + test_example_viewer.py (pygame, headless via
-  SDL dummy). Determinism/fast path untouched (read-only, host-loop). GA non-spatial -> no view.
+  pause SPACE, step S/., speed arrows, quit ESC/Q). Supports grid `layers` OR a custom
+  `frame_fn`/`overlay_fn` (so non-grid sims work). + PygameViewer Recorder. PyGame is shipped
+  as an example of consuming the viz renderers, NOT in the library.
+- `demos` extra (pygame) in pyproject — renamed from `viz` so installing the renderers never
+  pulls a GUI toolkit. ALL THREE demos take `--view`:
+    - conway: life heatmap; foragers: food heatmap + agents-by-energy.
+    - ga_benchmark.run_view: NON-SPATIAL viz — population in genome space (dims 0,1) colored by
+      fitness, optimum marker + best-objective convergence curve (frame_fn + ScatterRenderer).
+- launchers: scripts/run_{conway,foragers,ga_benchmark}_view.{ps1,bat}.
+- tests: test_viz.py (renderers incl scatter, no pygame) + test_example_viewer.py (pygame +
+  GA viewer, headless via SDL dummy). 184 tests pass. Determinism/fast path untouched.
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +

@@ -12,7 +12,8 @@ from typing import Iterable, Sequence
 
 import numpy as np
 
-__all__ = ["COLORMAPS", "apply_colormap", "GridRenderer", "AgentRenderer", "compose"]
+__all__ = ["COLORMAPS", "apply_colormap", "GridRenderer", "AgentRenderer", "compose",
+           "scatter_image", "ScatterRenderer"]
 
 # Colormaps as (stop, (r, g, b)) control points, interpolated over [0, 1].
 COLORMAPS: dict[str, list[tuple[float, tuple[int, int, int]]]] = {
@@ -98,6 +99,86 @@ class AgentRenderer:
             img[rows, cols] = np.array(self.color, dtype=np.uint8)
         mask[rows, cols] = True
         return img, mask
+
+
+def scatter_image(xs: np.ndarray, ys: np.ndarray, resolution: tuple[int, int] = (256, 256),
+                  bounds: tuple[tuple[float, float], tuple[float, float]] = ((-1, 1), (-1, 1)),
+                  values: np.ndarray | None = None, cmap: str = "viridis",
+                  color: tuple[int, int, int] = (255, 255, 255),
+                  background: tuple[int, int, int] = (0, 0, 0),
+                  vmin=None, vmax=None) -> np.ndarray:
+    """Rasterize 2-D points into an ``(H, W, 3)`` uint8 image.
+
+    Points are mapped from ``bounds`` ((xmin, xmax), (ymin, ymax)) into the image, with the
+    y-axis pointing up. Out-of-bounds points are dropped. If ``values`` is given, points are
+    colored by ``cmap``; otherwise a flat ``color`` is used. Useful for non-grid sims (e.g. a
+    GA population in genome space) and continuous worlds.
+    """
+    h, w = resolution
+    img = np.empty((h, w, 3), dtype=np.uint8)
+    img[:] = np.array(background, dtype=np.uint8)
+    xs = np.asarray(xs, dtype=np.float64)
+    ys = np.asarray(ys, dtype=np.float64)
+    (xmin, xmax), (ymin, ymax) = bounds
+    xspan = (xmax - xmin) or 1.0
+    yspan = (ymax - ymin) or 1.0
+    col = np.round((xs - xmin) / xspan * (w - 1)).astype(np.intp)
+    row = np.round((ys - ymin) / yspan * (h - 1)).astype(np.intp)
+    row = (h - 1) - row  # flip y so larger y is higher on screen
+    inb = (col >= 0) & (col < w) & (row >= 0) & (row < h)
+    col, row = col[inb], row[inb]
+    if values is not None:
+        norm = _normalize(np.asarray(values, dtype=np.float64)[inb], vmin, vmax)
+        img[row, col] = apply_colormap(norm, cmap)
+    else:
+        img[row, col] = np.array(color, dtype=np.uint8)
+    return img
+
+
+def _pull(state, spec):
+    """Pull a 1-D array from a state given a component name or ``(name, index)`` pair."""
+    if isinstance(spec, str):
+        arr = np.asarray(state[spec])
+        return arr if arr.ndim == 1 else arr[:, 0]
+    name, idx = spec
+    return np.asarray(state[name])[:, idx]
+
+
+class ScatterRenderer:
+    """Render agents/individuals as a 2-D scatter in a continuous coordinate space.
+
+    Unlike the grid renderers this does not need a world; it has its own ``resolution`` and
+    ``bounds``. Coordinates and color come from components, addressed by name (scalar) or
+    ``(name, index)`` (one column of a vector component). Returns an image via
+    :meth:`render_image` (intended for ``run_live(frame_fn=...)``).
+    """
+
+    def __init__(self, x=("genome", 0), y=("genome", 1), color_by=None,
+                 bounds=((-1.0, 1.0), (-1.0, 1.0)), resolution=(256, 256),
+                 cmap="viridis", color=(255, 255, 255), background=(0, 0, 0),
+                 vmin=None, vmax=None):
+        self.x = x
+        self.y = y
+        self.color_by = color_by
+        self.bounds = bounds
+        self.resolution = resolution
+        self.cmap = cmap
+        self.color = color
+        self.background = background
+        self.vmin = vmin
+        self.vmax = vmax
+
+    def render_image(self, state) -> np.ndarray:
+        xs = _pull(state, self.x)
+        ys = _pull(state, self.y)
+        vals = _pull(state, self.color_by) if self.color_by is not None else None
+        if "alive" in state.components:
+            alive = np.asarray(state.alive)
+            xs, ys = xs[alive], ys[alive]
+            if vals is not None:
+                vals = vals[alive]
+        return scatter_image(xs, ys, self.resolution, self.bounds, vals, self.cmap,
+                             self.color, self.background, self.vmin, self.vmax)
 
 
 def compose(layers: Sequence, state, world) -> np.ndarray:

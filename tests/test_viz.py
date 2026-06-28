@@ -9,8 +9,9 @@ import jax
 import numpy as np
 import pytest
 
-from evosim.viz import AgentRenderer, GridRenderer, apply_colormap, compose
-from evosim.examples import conway, foragers
+from evosim.viz import (AgentRenderer, GridRenderer, ScatterRenderer, apply_colormap, compose,
+                        scatter_image)
+from evosim.examples import conway, foragers, ga_benchmark
 
 
 def test_apply_colormap_shape_and_dtype():
@@ -52,6 +53,33 @@ def test_compose_layers():
               AgentRenderer("position", color_by=None, color=(255, 255, 255))]
     img = compose(layers, s, sim.world)
     assert img.shape == (8, 8, 3)
+
+
+def test_scatter_image_maps_corners():
+    xs = np.array([-1.0, 1.0])
+    ys = np.array([-1.0, 1.0])
+    img = scatter_image(xs, ys, resolution=(10, 10), bounds=((-1, 1), (-1, 1)),
+                        color=(255, 255, 255))
+    assert img.shape == (10, 10, 3)
+    assert tuple(img[9, 0]) == (255, 255, 255)  # (-1,-1) -> bottom-left
+    assert tuple(img[0, 9]) == (255, 255, 255)  # (1,1)  -> top-right (y flipped)
+
+
+def test_scatter_image_drops_out_of_bounds():
+    img = scatter_image(np.array([5.0]), np.array([0.0]), resolution=(8, 8),
+                        bounds=((-1, 1), (-1, 1)))
+    assert int(img.sum()) == 0
+
+
+def test_scatter_renderer_on_ga_state():
+    cfg = ga_benchmark.GAConfig(dim=4, pop_size=20, objective="sphere")
+    sim = ga_benchmark.build(cfg)
+    s = ga_benchmark.initial_state(sim, cfg, jax.random.key(0))
+    sr = ScatterRenderer(x=("genome", 0), y=("genome", 1), color_by="fitness",
+                         bounds=((-5, 5), (-5, 5)), resolution=(64, 64))
+    img = sr.render_image(s)
+    assert img.shape == (64, 64, 3)
+    assert int(img.sum()) > 0  # points drawn
 
 
 def test_viz_import_has_no_pygame_dependency():

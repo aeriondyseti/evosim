@@ -6,18 +6,21 @@ paints them (PyGame, matplotlib, a web canvas, moderngl, ...). They depend only 
 
 A concrete live viewer built on these renderers ships as an example, not as part of the core:
 see :mod:`evosim.examples.pygame_viewer` (``run_live`` / ``PygameViewer``), which requires the
-optional ``viz`` extra. This mirrors how ``evosim.examples.conway`` demonstrates the core engine.
+optional ``demos`` extra. This mirrors how ``evosim.examples.conway`` demonstrates the core engine.
 
     from evosim.viz import GridRenderer, AgentRenderer, compose, apply_colormap
 """
 
 from __future__ import annotations
 
-from .render import COLORMAPS, AgentRenderer, GridRenderer, apply_colormap, compose
+from .render import (COLORMAPS, AgentRenderer, GridRenderer, ScatterRenderer, apply_colormap,
+                     compose, scatter_image)
 
 __all__ = [
     "GridRenderer",
     "AgentRenderer",
+    "ScatterRenderer",
+    "scatter_image",
     "compose",
     "apply_colormap",
     "COLORMAPS",

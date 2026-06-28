@@ -33,8 +33,11 @@ This project uses [uv](https://docs.astral.sh/uv/).
 ```bash
 uv sync                      # core (jax, numpy)
 uv sync --extra recorders    # + zarr/pyarrow for disk recorders
-uv sync --extra viz          # + pygame for the live viewer
+uv sync --extra demos        # + pygame for the interactive demo viewers
 ```
+
+The `evosim.viz` renderers are pure-numpy and need no extra; only the interactive PyGame demo
+viewers require `--extra demos`.
 
 JAX has no native Windows GPU build, so development/testing here runs on CPU. The architecture
 is backend-agnostic (XLA), so the same code runs on GPU/TPU where a CUDA/TPU `jaxlib` is available.
@@ -97,16 +100,21 @@ scripts\run_ga_benchmark.ps1
 ## Visualization (optional)
 
 The library ships **framework-agnostic, dependency-free renderers** in `evosim.viz`
-(`GridRenderer`, `AgentRenderer`, `compose`, colormaps) that turn a `State` into RGB images —
-independent of what eventually paints them. A concrete **live PyGame viewer is shipped as an
-example** (`evosim.examples.pygame_viewer`), the same way Conway demonstrates the core engine;
-it requires the optional `viz` extra. The Conway and foragers demos accept `--view`:
+(`GridRenderer`, `AgentRenderer`, `ScatterRenderer`, `compose`, colormaps) that turn a `State`
+into RGB images — independent of what eventually paints them. A concrete **live PyGame viewer is
+shipped as an example** (`evosim.examples.pygame_viewer`), the same way Conway demonstrates the
+core engine; it requires the optional `demos` extra. All three demos accept `--view`:
 
 ```bash
-uv sync --extra viz
+uv sync --extra demos
 uv run python -m evosim.examples.conway --view          # live cellular automaton
 uv run python -m evosim.examples.foragers --view        # food heatmap + agents colored by energy
+uv run python -m evosim.examples.ga_benchmark --view    # GA population in genome space + curve
 ```
+
+The GA viewer shows the *non-spatial* case: the population scattered in genome space (dims 0,1),
+colored by fitness, with the optimum marked and a live best-objective convergence curve — built
+with `ScatterRenderer` via `run_live(frame_fn=...)`.
 
 Or use the dedicated viewer launchers in [`scripts/`](scripts) (PowerShell `.ps1` or `.bat`;
 extra args pass through, e.g. `--steps`, `--seed`):
@@ -114,6 +122,7 @@ extra args pass through, e.g. `--steps`, `--seed`):
 ```powershell
 scripts\run_conway_view.ps1            # or scripts\run_conway_view.bat
 scripts\run_foragers_view.ps1
+scripts\run_ga_benchmark_view.ps1
 ```
 
 Controls (also shown in an on-screen legend, toggle with **H**): **SPACE** pause · **S**/**.**

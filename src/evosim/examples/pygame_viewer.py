@@ -3,7 +3,7 @@
 This is an *example integration*, not part of the core library — it shows how to consume the
 framework-agnostic renderers (`evosim.viz`) plus the host-loop runner to drive a specific GUI
 toolkit (PyGame). The same renderers could just as well feed matplotlib, a web canvas, or
-moderngl. Requires the optional ``viz`` extra (``uv sync --extra viz``).
+moderngl. Requires the optional ``demos`` extra (``uv sync --extra demos``).
 
 It's a decoupled, read-only consumer of the engine (per SPEC): it steps the simulation on the
 host loop and draws each frame, so determinism and the headless fast path are untouched.
@@ -21,6 +21,8 @@ from __future__ import annotations
 
 from typing import Callable, Sequence
 
+import numpy as np
+
 from ..viz import AgentRenderer, GridRenderer, compose
 
 try:  # optional dependency
@@ -35,7 +37,7 @@ def _require_pygame() -> None:
     if pygame is None:
         raise ImportError(
             "PyGame is required for this example viewer. Install it with "
-            "`uv sync --extra viz` (or `pip install evosim[viz]`)."
+            "`uv sync --extra demos` (or `pip install evosim[demos]`)."
         )
 
 
@@ -82,13 +84,22 @@ def _draw_panel(screen, font, lines, pos=(8, 8), pad=6,
 
 
 def run_live(sim, state, n_steps: int | None = None, layers: Sequence | None = None,
-             px_per_cell: int = 8, fps: int = 30, steps_per_frame: int = 1,
-             title: str = "evosim", caption_fn: Callable | None = None,
-             show_legend: bool = True):
+             frame_fn: Callable | None = None, overlay_fn: Callable | None = None,
+             px_per_cell: int = 8, window_size: tuple[int, int] | None = None,
+             fps: int = 30, steps_per_frame: int = 1, title: str = "evosim",
+             caption_fn: Callable | None = None, show_legend: bool = True):
     """Open a window and run the simulation live, returning the final state.
 
-    ``n_steps=None`` runs until the window is closed. ``layers`` defaults to a heatmap per field
-    plus an agent layer. ``caption_fn(state) -> str`` optionally updates the window title.
+    Two rendering modes:
+
+    - **grid** (default): ``layers`` of renderers composited over ``sim.world`` (defaults to a
+      heatmap per field plus an agent layer). Requires ``sim.world``.
+    - **custom**: pass ``frame_fn(state) -> (H, W, 3) uint8`` to draw any image yourself (e.g. a
+      non-grid scatter); ``sim.world`` is not needed. ``overlay_fn(screen, state, size)`` can
+      additionally draw pygame primitives (curves, markers) in window coordinates.
+
+    ``n_steps=None`` runs until the window is closed. ``caption_fn(state) -> str`` optionally
+    updates the window title.
 
     Controls (also shown in the on-screen legend, toggle with ``H``):
     ``SPACE`` pause/resume · ``S``/``.`` step one tick while paused · ``Up``/``Right`` faster ·
@@ -96,15 +107,21 @@ def run_live(sim, state, n_steps: int | None = None, layers: Sequence | None = N
     """
     _require_pygame()
     world = sim.world
-    if world is None:
-        raise ValueError("run_live requires sim.world to define the grid shape")
-    h, w = world.shape
-    layers = list(layers) if layers is not None else _default_layers(state, world)
+
+    if frame_fn is not None:
+        first = np.asarray(frame_fn(state))
+        fh, fw = first.shape[:2]
+        size = window_size or (fw * px_per_cell, fh * px_per_cell)
+    else:
+        if world is None:
+            raise ValueError("run_live needs sim.world for layer rendering, or pass frame_fn=...")
+        layers = list(layers) if layers is not None else _default_layers(state, world)
+        h, w = world.shape
+        size = window_size or (w * px_per_cell, h * px_per_cell)
 
     pygame.init()
     pygame.font.init()
     try:
-        size = (w * px_per_cell, h * px_per_cell)
         screen = pygame.display.set_mode(size)
         pygame.display.set_caption(title)
         clock = pygame.time.Clock()
@@ -144,9 +161,11 @@ def run_live(sim, state, n_steps: int | None = None, layers: Sequence | None = N
                         legend = not legend
 
             # draw current state
-            img = compose(layers, s, world)
+            img = np.asarray(frame_fn(s)) if frame_fn is not None else compose(layers, s, world)
             surf = pygame.transform.scale(_make_surface(img), size)
             screen.blit(surf, (0, 0))
+            if overlay_fn is not None:
+                overlay_fn(screen, s, size)
             if legend:
                 status = f"{'PAUSED' if paused else 'PLAYING'}   x{spf}   tick {int(s.tick)}"
                 _draw_panel(screen, font, [*_LEGEND_LINES, "", status])

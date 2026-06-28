@@ -33,7 +33,7 @@ from ..state import State
 from ..system import System
 
 __all__ = ["GAConfig", "FITNESS_FUNCTIONS", "sphere", "rastrigin", "build", "initial_state",
-           "best_objective", "main"]
+           "best_objective", "run_view", "main"]
 
 
 def sphere(x: jax.Array) -> jax.Array:
@@ -124,11 +124,95 @@ def best_objective(state: State, cfg: GAConfig) -> jax.Array:
     return jnp.min(FITNESS_FUNCTIONS[cfg.objective](state["genome"]))
 
 
-def main() -> None:
-    cfg = GAConfig(dim=10, pop_size=256, objective="sphere")
-    sim = build(cfg, seed=0)
-    state = initial_state(sim, cfg, jax.random.key(0))
-    gens = 120
+def _draw_curve(screen, vals, size) -> None:
+    """Draw a best-objective convergence curve in a translucent bottom-left panel."""
+    import pygame
+    if len(vals) < 2:
+        return
+    w, h = size
+    pw, ph = min(240, w - 16), 90
+    x0, y0 = 8, h - ph - 8
+    panel = pygame.Surface((pw, ph), pygame.SRCALPHA)
+    panel.fill((0, 0, 0, 150))
+    screen.blit(panel, (x0, y0))
+    v = np.asarray(vals, dtype=float)
+    vmin, vmax = float(v.min()), float(v.max())
+    denom = (vmax - vmin) or 1.0
+    n = len(v)
+    pts = []
+    for i, val in enumerate(v):
+        px = x0 + int(i / (n - 1) * (pw - 1))
+        # best (min) at the bottom, start (max) at the top -> curve descends as it converges
+        py = y0 + (ph - 1) - int((val - vmin) / denom * (ph - 1))
+        pts.append((px, py))
+    pygame.draw.lines(screen, (90, 220, 255), False, pts, 2)
+
+
+def run_view(cfg: GAConfig = GAConfig(), seed: int = 0, steps: int | None = None):
+    """Live visualization of the GA: population in genome space (dims 0,1) colored by fitness,
+    with the optimum marked and a best-objective convergence curve. One frame = one generation.
+
+    Demonstrates visualizing a *non-spatial* sim: it uses the library's world-free
+    :class:`~evosim.viz.ScatterRenderer` via ``run_live(frame_fn=...)``.
+    """
+    if cfg.dim < 2:
+        raise ValueError("run_view needs dim >= 2 to scatter genome dims 0 and 1")
+    from ..viz import ScatterRenderer
+    from .pygame_viewer import run_live
+
+    sim = build(cfg, seed=seed)
+    state = initial_state(sim, cfg, jax.random.key(seed))
+    objective = FITNESS_FUNCTIONS[cfg.objective]
+    b = cfg.init_range
+    scatter = ScatterRenderer(x=("genome", 0), y=("genome", 1), color_by="fitness",
+                              bounds=((-b, b), (-b, b)), resolution=(320, 320), cmap="viridis")
+    hist = {"last_tick": -1, "best": []}
+
+    def frame_fn(s):
+        return scatter.render_image(s)
+
+    def overlay_fn(screen, s, size):
+        import pygame
+        w, h = size
+        ox = int((0 - (-b)) / (2 * b) * (w - 1))
+        oy = int((1 - (0 - (-b)) / (2 * b)) * (h - 1))  # y flipped
+        pygame.draw.line(screen, (0, 255, 0), (ox - 7, oy), (ox + 7, oy), 2)
+        pygame.draw.line(screen, (0, 255, 0), (ox, oy - 7), (ox, oy + 7), 2)
+        t = int(s.tick)
+        if t != hist["last_tick"]:
+            hist["last_tick"] = t
+            hist["best"].append(float(jnp.min(objective(s["genome"]))))
+        _draw_curve(screen, hist["best"], size)
+
+    return run_live(sim, state, n_steps=steps, frame_fn=frame_fn, overlay_fn=overlay_fn,
+                    px_per_cell=2, fps=30,
+                    title=f"evosim · GA ({cfg.objective}) genome space",
+                    caption_fn=lambda s: f"evosim · GA  gen={int(s.tick)} "
+                                         f"best={float(jnp.min(objective(s['genome']))):.4f}")
+
+
+def main(argv=None) -> None:
+    import argparse
+
+    p = argparse.ArgumentParser(description="Classic GA benchmark (evosim demo)")
+    p.add_argument("--view", action="store_true",
+                   help="live PyGame visualization in genome space")
+    p.add_argument("--objective", default="sphere", choices=sorted(FITNESS_FUNCTIONS))
+    p.add_argument("--dim", type=int, default=10)
+    p.add_argument("--pop", type=int, default=256)
+    p.add_argument("--steps", type=int, default=None)
+    p.add_argument("--seed", type=int, default=0)
+    args = p.parse_args(argv)
+
+    cfg = GAConfig(dim=args.dim, pop_size=args.pop, objective=args.objective)
+
+    if args.view:
+        run_view(cfg, seed=args.seed, steps=args.steps)
+        return
+
+    sim = build(cfg, seed=args.seed)
+    state = initial_state(sim, cfg, jax.random.key(args.seed))
+    gens = args.steps or 120
     objective_fn = FITNESS_FUNCTIONS[cfg.objective]
     final, recs = sim.run(state, gens, record=lambda s: jnp.min(objective_fn(s["genome"])))
     best = np.asarray(recs)
