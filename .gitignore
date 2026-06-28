@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+*.so
+
+# uv / venv
+.venv/
+uv.lock.bak
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.hypothesis/
+
+# JAX cache
+jax_cache/
+.jax_cache/
+
+# Sim outputs / checkpoints / recorder dumps
+runs/
+outputs/
+*.npz
+*.zarr/
+checkpoints/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Keep
+!tests/**/*.npz
