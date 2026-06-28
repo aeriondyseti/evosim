@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # Launch the live PyGame visualizer for Conway's Game of Life.
-# Controls: SPACE pause | Up/Right faster | Down/Left slower | Esc/Q quit.
+# Controls: SPACE pause | S/. step (paused) | Up/Right faster | Down/Left slower | H help | Esc/Q quit.
 # Requires the viz extra:  uv sync --extra viz
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot

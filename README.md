@@ -113,7 +113,8 @@ scripts\run_conway_view.ps1            # or scripts\run_conway_view.bat
 scripts\run_foragers_view.ps1
 ```
 
-Controls: **SPACE** pause · **↑/→** faster · **↓/←** slower · **ESC/Q** quit.
+Controls (also shown in an on-screen legend, toggle with **H**): **SPACE** pause · **S**/**.**
+step one tick while paused · **↑/→** faster · **↓/←** slower · **ESC/Q** quit.
 
 It builds on the existing host-loop runner, so the headless fast path and determinism are
 untouched. The renderers are pure-numpy and dependency-free; only the window needs pygame:

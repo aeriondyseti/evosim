@@ -4,7 +4,8 @@ A decoupled, read-only consumer of the engine (per SPEC): it steps the simulatio
 loop and draws each frame, so determinism and the headless fast path are untouched.
 
 - :func:`run_live` — open a window and run the sim, compositing renderer layers each frame.
-  Controls: SPACE pause, UP/RIGHT faster, DOWN/LEFT slower, ESC/Q quit.
+  An on-screen legend (toggle ``H``) documents the controls: SPACE pause, S/. step one tick
+  while paused, UP/RIGHT faster, DOWN/LEFT slower, ESC/Q quit.
 - :class:`PygameViewer` — a :class:`~evosim.recorders.Recorder` so a window can be driven by
   ``recorders.run_recorded`` alongside other recorders.
 
@@ -50,13 +51,43 @@ def _make_surface(img):
     return pygame.surfarray.make_surface(img.swapaxes(0, 1))
 
 
+# Control legend shown in the viewer (also documents the keybindings).
+_LEGEND_LINES = (
+    "SPACE   pause / resume",
+    "S / .   step (when paused)",
+    "Arrows  speed  +/-",
+    "H       toggle this help",
+    "ESC/Q   quit",
+)
+
+
+def _draw_panel(screen, font, lines, pos=(8, 8), pad=6,
+                fg=(240, 240, 240), bg=(0, 0, 0, 160)):
+    """Draw a translucent text panel at ``pos`` (top-left)."""
+    surfs = [font.render(t, True, fg) for t in lines]
+    width = max((s.get_width() for s in surfs), default=0) + pad * 2
+    height = sum(s.get_height() for s in surfs) + pad * 2
+    panel = pygame.Surface((width, height), pygame.SRCALPHA)
+    panel.fill(bg)
+    y = pad
+    for s in surfs:
+        panel.blit(s, (pad, y))
+        y += s.get_height()
+    screen.blit(panel, pos)
+
+
 def run_live(sim, state, n_steps: int | None = None, layers: Sequence | None = None,
              px_per_cell: int = 8, fps: int = 30, steps_per_frame: int = 1,
-             title: str = "evosim", caption_fn: Callable | None = None):
+             title: str = "evosim", caption_fn: Callable | None = None,
+             show_legend: bool = True):
     """Open a window and run the simulation live, returning the final state.
 
     ``n_steps=None`` runs until the window is closed. ``layers`` defaults to a heatmap per field
     plus an agent layer. ``caption_fn(state) -> str`` optionally updates the window title.
+
+    Controls (also shown in the on-screen legend, toggle with ``H``):
+    ``SPACE`` pause/resume · ``S``/``.`` step one tick while paused · ``Up``/``Right`` faster ·
+    ``Down``/``Left`` slower · ``ESC``/``Q`` quit.
     """
     _require_pygame()
     world = sim.world
@@ -66,11 +97,13 @@ def run_live(sim, state, n_steps: int | None = None, layers: Sequence | None = N
     layers = list(layers) if layers is not None else _default_layers(state, world)
 
     pygame.init()
+    pygame.font.init()
     try:
         size = (w * px_per_cell, h * px_per_cell)
         screen = pygame.display.set_mode(size)
         pygame.display.set_caption(title)
         clock = pygame.time.Clock()
+        font = pygame.font.Font(None, 18)
 
         tick = sim.backend.jit(sim.scheduler.make_tick(sim.root_key, world, sim.backend,
                                                        sim.params))
@@ -78,9 +111,16 @@ def run_live(sim, state, n_steps: int | None = None, layers: Sequence | None = N
         steps_done = 0
         spf = max(1, int(steps_per_frame))
         paused = False
+        legend = show_legend
         running = True
 
+        def _do_step():
+            nonlocal s, steps_done
+            s = tick(s)
+            steps_done += 1
+
         while running:
+            step_once = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -89,15 +129,24 @@ def run_live(sim, state, n_steps: int | None = None, layers: Sequence | None = N
                         running = False
                     elif event.key == pygame.K_SPACE:
                         paused = not paused
+                    elif event.key in (pygame.K_s, pygame.K_PERIOD):
+                        step_once = True       # single-step (takes effect while paused)
                     elif event.key in (pygame.K_UP, pygame.K_RIGHT):
                         spf = min(spf * 2, 4096)
                     elif event.key in (pygame.K_DOWN, pygame.K_LEFT):
                         spf = max(spf // 2, 1)
+                    elif event.key == pygame.K_h:
+                        legend = not legend
 
             # draw current state
             img = compose(layers, s, world)
             surf = pygame.transform.scale(_make_surface(img), size)
             screen.blit(surf, (0, 0))
+            if legend:
+                status = f"{'PAUSED' if paused else 'PLAYING'}   x{spf}   tick {int(s.tick)}"
+                _draw_panel(screen, font, [*_LEGEND_LINES, "", status])
+            else:
+                _draw_panel(screen, font, ["H  help"])
             if caption_fn is not None:
                 pygame.display.set_caption(caption_fn(s))
             pygame.display.flip()
@@ -106,10 +155,11 @@ def run_live(sim, state, n_steps: int | None = None, layers: Sequence | None = N
             if n_steps is not None and steps_done >= n_steps:
                 break  # final state already drawn
             if paused:
+                if step_once:
+                    _do_step()
                 continue
             for _ in range(spf):
-                s = tick(s)
-                steps_done += 1
+                _do_step()
                 if n_steps is not None and steps_done >= n_steps:
                     break
         return s

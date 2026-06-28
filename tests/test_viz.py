@@ -98,6 +98,16 @@ def test_run_live_default_layers():
     assert int(final.tick) == 3
 
 
+def test_run_live_legend_toggle_runs():
+    # Both legend states should render without error (the panel draws the controls + status).
+    sim = conway.build(10, 10)
+    g = conway.stamp(conway.empty_grid(10, 10), conway.GLIDER, 1, 1)
+    state = conway.initial_state(sim, g)
+    a = run_live(sim, state, n_steps=2, px_per_cell=6, fps=1000, show_legend=True)
+    b = run_live(sim, state, n_steps=2, px_per_cell=6, fps=1000, show_legend=False)
+    assert int(a.tick) == 2 and int(b.tick) == 2
+
+
 def test_pygame_viewer_as_recorder():
     sim = conway.build(8, 8)
     state = conway.initial_state(sim, conway.stamp(conway.empty_grid(8, 8), conway.BLINKER, 3, 2))
