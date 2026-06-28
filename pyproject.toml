@@ -32,8 +32,8 @@ demos = ["pygame>=2.5"]
 gpu = ["jax[cuda12]>=0.10.2; sys_platform == 'linux'"]
 
 [project.urls]
-Homepage = "https://github.com/aeriondyseti/evosim-framework"
-Repository = "https://github.com/aeriondyseti/evosim-framework"
+Homepage = "https://github.com/aeriondyseti/evosim"
+Repository = "https://github.com/aeriondyseti/evosim"
 
 [build-system]
 requires = ["uv_build>=0.11.25,<0.12.0"]

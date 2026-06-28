@@ -34,20 +34,20 @@ Python package (`import evosim`), so it drops into any project.
 **Add it to your project** (recommended, with [uv](https://docs.astral.sh/uv/)):
 
 ```bash
-uv add "evosim @ git+https://github.com/aeriondyseti/evosim-framework"
+uv add "evosim @ git+https://github.com/aeriondyseti/evosim"
 # with optional extras (comma-separated inside the brackets):
-uv add "evosim[recorders] @ git+https://github.com/aeriondyseti/evosim-framework"
+uv add "evosim[recorders] @ git+https://github.com/aeriondyseti/evosim"
 ```
 
 **Or with pip** (into your project's virtualenv):
 
 ```bash
-pip install "evosim @ git+https://github.com/aeriondyseti/evosim-framework"
-pip install "evosim[recorders] @ git+https://github.com/aeriondyseti/evosim-framework"
+pip install "evosim @ git+https://github.com/aeriondyseti/evosim"
+pip install "evosim[recorders] @ git+https://github.com/aeriondyseti/evosim"
 ```
 
 Pin to a tag or commit for reproducibility by appending `@<ref>` to the URL, e.g.
-`...evosim-framework@v0.1.0`. Then `import evosim` and follow the [Quickstart](#quickstart).
+`...evosim@v0.1.0`. Then `import evosim` and follow the [Quickstart](#quickstart).
 
 **Optional extras:**
 
