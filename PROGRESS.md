@@ -4,7 +4,7 @@
 > (context may have been compacted). Update it after every chunk of work.
 > Source of truth for design = `SPEC.md`.
 
-Last updated: 2026-06-28 (iteration 8 — observability + persistence done; PHASE 4 COMPLETE)
+Last updated: 2026-06-28 (iteration 9 — sim assembly done; PHASE 5 COMPLETE — LIBRARY DONE)
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +
@@ -94,7 +94,8 @@ tests/             unit tests per module + determinism golden-masters + perf smo
       golden-master PASSES) + tests (4)
 
 ### Phase 5 — Assembly
-- [ ] `sim.py` (Simulation assembly, run loop, vmap-over-worlds) + tests
+- [x] `sim.py` (Simulation: run/run_recorded/run_with_growth/run_ensemble vmap-over-worlds)
+      + tests (7). Library is now feature-complete. Exported Simulation.
 
 ### Phase 6 — Demos (vertical validation)
 - [ ] `examples/conway.py` + test (known-pattern golden-master, e.g. blinker/glider)
@@ -108,6 +109,10 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [ ] Full `uv run pytest` green; final review pass
 
 ## Running log (newest first)
+- iter 9 (sim assembly; PHASE 5 DONE — LIBRARY FEATURE-COMPLETE): sim.py Simulation
+  (run/run_recorded/run_with_growth/run_ensemble vmap-over-worlds), 7 tests. 147 tests pass.
+  Library core is complete; remaining = Phase 6 demos (conway, foragers, ga_benchmark) +
+  Phase 7 hardening (golden-masters, perf smoke, README). Next: examples/conway.py.
 - iter 8 (observability + persistence; PHASE 4 DONE): metrics.py (on-device reducers +
   MetricSet), recorders.py (MetricsRecorder/SnapshotRecorder + run_recorded host loop),
   checkpoint.py (npz save/load, deterministic resume golden-master passes). Exported all.

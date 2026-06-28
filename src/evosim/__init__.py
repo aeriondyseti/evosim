@@ -21,6 +21,7 @@ from . import (
 from .backend import Backend, JAXBackend, get_backend, use_backend
 from .schema import RESERVED_FIELDS, Field, Schema, enable_x64
 from .scheduler import Scheduler
+from .sim import Simulation
 from .state import State, state_fingerprint
 from .system import DEFAULT_STAGES, Context, System, system
 
@@ -41,6 +42,7 @@ __all__ = [
     "system",
     "Context",
     "Scheduler",
+    "Simulation",
     "DEFAULT_STAGES",
     # backend
     "Backend",
