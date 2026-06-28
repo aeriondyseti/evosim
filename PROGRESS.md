@@ -79,9 +79,9 @@ tests/             unit tests per module + determinism golden-masters + perf smo
       conway demo will just wire ToricGrid2D + life_like("cells").
 
 ### Phase 3 — Genetics & interactions
-- [ ] `operators/mutation.py` + tests
-- [ ] `operators/crossover.py` + tests
-- [ ] `operators/selection.py` + tests
+- [x] `operators/mutation.py` (gaussian/uniform/bitflip) + tests
+- [x] `operators/crossover.py` (clone/uniform/one_point/n_point/blend) + tests
+- [x] `operators/selection.py` (tournament/roulette/truncation/elitism) + tests (19 total)
 - [ ] `interaction.py` (pairing + deterministic conflict resolution) + tests
 
 ### Phase 4 — Observability & persistence
