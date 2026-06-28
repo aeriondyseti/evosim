@@ -28,21 +28,50 @@ and JIT-compiled, with **no per-entity Python**.
 
 ## Install
 
-This project uses [uv](https://docs.astral.sh/uv/).
+evosim is not yet on PyPI — install it straight from the public Git repo. It's a normal
+Python package (`import evosim`), so it drops into any project.
+
+**Add it to your project** (recommended, with [uv](https://docs.astral.sh/uv/)):
+
+```bash
+uv add "evosim @ git+https://github.com/aeriondyseti/evosim-framework"
+# with optional extras (comma-separated inside the brackets):
+uv add "evosim[recorders] @ git+https://github.com/aeriondyseti/evosim-framework"
+```
+
+**Or with pip** (into your project's virtualenv):
+
+```bash
+pip install "evosim @ git+https://github.com/aeriondyseti/evosim-framework"
+pip install "evosim[recorders] @ git+https://github.com/aeriondyseti/evosim-framework"
+```
+
+Pin to a tag or commit for reproducibility by appending `@<ref>` to the URL, e.g.
+`...evosim-framework@v0.1.0`. Then `import evosim` and follow the [Quickstart](#quickstart).
+
+**Optional extras:**
+
+| Extra | Pulls in | For |
+|-------|----------|-----|
+| *(none)* | `jax`, `numpy` | the core library + the pure-numpy `evosim.viz` renderers |
+| `recorders` | `zarr`, `pyarrow` | the disk recorders (snapshots / metrics to disk) |
+| `demos` | `pygame` | the interactive example viewers (`evosim.examples.pygame_viewer`) |
+| `gpu` | `jax[cuda12]` (Linux only) | NVIDIA CUDA 12 GPU acceleration on Linux/WSL2 |
+
+JAX has no native Windows GPU build, so development/testing on Windows runs on CPU. The core is
+backend-agnostic (XLA), so the same code runs on GPU/TPU wherever a CUDA/TPU `jaxlib` is present;
+by default `jax`/`jaxlib` install the CPU build. On Linux/WSL2 the `gpu` extra installs
+`jax[cuda12]` and the same code runs on the GPU — validated on NVIDIA RTX 5060 Ti / 4060 Ti
+(see *Performance*).
+
+**Develop evosim itself** (working in a clone of this repo):
 
 ```bash
 uv sync                      # core (jax, numpy)
 uv sync --extra recorders    # + zarr/pyarrow for disk recorders
 uv sync --extra demos        # + pygame for the interactive demo viewers
+uv sync --extra gpu          # + jax[cuda12] on Linux/WSL2 for GPU runs
 ```
-
-The `evosim.viz` renderers are pure-numpy and need no extra; only the interactive PyGame demo
-viewers require `--extra demos`.
-
-JAX has no native Windows GPU build, so development/testing here runs on CPU. The architecture
-is backend-agnostic (XLA), so the same code runs on GPU/TPU where a CUDA/TPU `jaxlib` is
-available. On Linux/WSL2, `uv sync --extra gpu` installs `jax[cuda12]` and the same code runs on
-the GPU — validated on NVIDIA RTX 5060 Ti / 4060 Ti (see *Performance*).
 
 ## Quickstart
 
@@ -71,6 +100,38 @@ final, energy = sim.run(state, n_steps=100,
                         record=lambda s: evosim.metrics.masked_mean(s["energy"], s.alive))
 print(final, float(energy[-1]))
 ```
+
+State has two kinds of data, accessed through separate APIs:
+
+- **Per-agent components** — the SoA fields you declare in the `Schema` (`energy`, `genome`,
+  `position`, plus the auto-added `alive`/`id`). Read with `state["energy"]` / `state.get(...)`,
+  write with `state.set(...)` / `state.set_many({...})`.
+- **Environment fields** — world grids/layers like a food field or a Conway board. Read with
+  `state.get_field(...)`, write with `state.set_field(...)`.
+
+For the smallest possible program, see the **field-only** Conway demo
+([`src/evosim/examples/conway.py`](src/evosim/examples/conway.py)) — no agents, just a scheduler,
+a `ToricGrid2D` world, and the built-in `life_like` cellular-automaton system:
+
+```python
+import jax
+from evosim import Scheduler, Simulation
+from evosim.schema import Schema
+from evosim.state import State
+from evosim.world import ToricGrid2D, life_like
+
+sched = Scheduler(stages=("environment",))
+sched.add(life_like("cells", born=(3,), survive=(2, 3)))     # a built-in CA system
+sim = Simulation(sched, world=ToricGrid2D(32, 32), seed=0, schema=Schema())  # Schema() = no agents
+
+grid0 = (jax.random.uniform(jax.random.key(0), (32, 32)) < 0.25).astype("int32")
+state = State.create(sim.schema, capacity=0, fields={"cells": grid0})
+final, live = sim.run(state, n_steps=20, record=lambda s: s.get_field("cells").sum())
+print("live cells per step:", [int(x) for x in live])
+```
+
+The [reference demos](#reference-demos) below (`conway`, `foragers`, `ga_benchmark`) are the best
+worked examples to copy from — each is a self-contained module under `evosim.examples`.
 
 ## Reference demos
 
