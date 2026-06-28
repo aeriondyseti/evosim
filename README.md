@@ -33,6 +33,7 @@ This project uses [uv](https://docs.astral.sh/uv/).
 ```bash
 uv sync                      # core (jax, numpy)
 uv sync --extra recorders    # + zarr/pyarrow for disk recorders
+uv sync --extra viz          # + pygame for the live viewer
 ```
 
 JAX has no native Windows GPU build, so development/testing here runs on CPU. The architecture
@@ -92,6 +93,33 @@ scripts\run_ga_benchmark.ps1
   generations: emergent natural selection.
 - **ga_benchmark** — a generational GA minimizing sphere/Rastrigin via elitism + tournament
   selection + crossover + mutation.
+
+## Visualization (optional)
+
+A decoupled, read-only PyGame viewer ships in `evosim.viz` (install `evosim[viz]`). The Conway
+and foragers demos accept `--view`:
+
+```bash
+uv sync --extra viz
+uv run python -m evosim.examples.conway --view          # live cellular automaton
+uv run python -m evosim.examples.foragers --view        # food heatmap + agents colored by energy
+# or via the launchers (args pass through):  scripts\run_conway.ps1 --view
+```
+
+Controls: **SPACE** pause · **↑/→** faster · **↓/←** slower · **ESC/Q** quit.
+
+It builds on the existing host-loop runner, so the headless fast path and determinism are
+untouched. The renderers are pure-numpy and dependency-free; only the window needs pygame:
+
+```python
+from evosim.viz import run_live, GridRenderer, AgentRenderer
+run_live(sim, state, n_steps=None,
+         layers=[GridRenderer("food", cmap="fire"),
+                 AgentRenderer("position", color_by="energy", cmap="viridis")])
+```
+
+`PygameViewer` is also a `Recorder`, so a window can be driven by `recorders.run_recorded`
+alongside other recorders. Everything runs headless under `SDL_VIDEODRIVER=dummy` (CI).
 
 ## Architecture (one tick)
 

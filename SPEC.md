@@ -187,9 +187,13 @@ Interface (per world module):
 
 ## 10. Visualization
 
-- Engine is **headless**. Optional **native GPU window** viewer (moderngl/pyglet/pygame — TBD)
-  is a separate, decoupled consumer that taps a **downsampled** state stream so rendering never
-  bottlenecks the sim. Deferred after the engine; minimal matplotlib/notebook view first.
+- Engine is **headless**. A decoupled, read-only viewer consumes state via the host-loop runner
+  so rendering never affects determinism or the fast path.
+- **IMPLEMENTED:** `evosim.viz` — a **PyGame** viewer (`run_live`, plus a `PygameViewer`
+  `Recorder`) with pure-numpy renderers (`GridRenderer` field heatmaps, `AgentRenderer` agent
+  rasterization, colormaps). Behind the `viz` extra; Conway/foragers demos take `--view`; runs
+  headless under `SDL_VIDEODRIVER=dummy`. (A native moderngl/GPU window remains possible later
+  for very large scenes.)
 
 ---
 

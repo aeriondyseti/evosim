@@ -24,6 +24,7 @@ dependencies = [
 
 [project.optional-dependencies]
 recorders = ["zarr>=2.18", "pyarrow>=16"]
+viz = ["pygame>=2.5"]
 viewer = ["moderngl>=5.10", "pyglet>=2.0"]
 
 [project.urls]

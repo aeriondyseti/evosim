@@ -6,7 +6,17 @@
 
 Last updated: 2026-06-28 (iteration 12 — PHASE 7 DONE; PROJECT COMPLETE ✅)
 
-## ✅ COMPLETE — library + all 3 demos built, 168 tests pass. Loop stopped.
+## ✅ COMPLETE — library + all 3 demos built. Loop stopped.
+## Post-completion: added PyGame visualization (evosim.viz). 177 tests pass.
+
+### Visualization (added after core completion)
+- `src/evosim/viz/render.py` — pure-numpy renderers (GridRenderer heatmaps, AgentRenderer
+  rasterization, colormaps, compose); no pygame needed to import.
+- `src/evosim/viz/pygame_viewer.py` — run_live (window loop, pause/speed/quit controls) +
+  PygameViewer Recorder; guarded pygame import (clear error if missing).
+- `viz` extra (pygame) in pyproject. Conway + foragers demos take `--view`.
+- tests/test_viz.py (9 tests, headless via SDL_VIDEODRIVER=dummy). Determinism/fast path
+  untouched (viewer is read-only, uses host-loop). GA is non-spatial -> no view (future).
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +

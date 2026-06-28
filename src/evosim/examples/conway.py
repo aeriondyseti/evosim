@@ -81,10 +81,34 @@ def render(grid: jax.Array, alive: str = "#", dead: str = ".") -> str:
     return "\n".join("".join(alive if c else dead for c in row) for row in g)
 
 
-def main() -> None:
-    h, w, steps = 20, 40, 60
-    sim = build(h, w, seed=0)
-    grid0 = random_grid(jax.random.key(0), h, w, density=0.25)
+def main(argv=None) -> None:
+    import argparse
+
+    p = argparse.ArgumentParser(description="Conway's Game of Life (evosim demo)")
+    p.add_argument("--view", action="store_true", help="live PyGame visualization")
+    p.add_argument("--height", type=int, default=None)
+    p.add_argument("--width", type=int, default=None)
+    p.add_argument("--steps", type=int, default=None)
+    p.add_argument("--density", type=float, default=0.25)
+    p.add_argument("--seed", type=int, default=0)
+    args = p.parse_args(argv)
+
+    if args.view:
+        h = args.height or 80
+        w = args.width or 120
+        sim = build(h, w, seed=args.seed)
+        state = initial_state(sim, random_grid(jax.random.key(args.seed), h, w, args.density))
+        from ..viz import GridRenderer, run_live
+        run_live(sim, state, n_steps=args.steps,
+                 layers=[GridRenderer("cells", cmap="green", vmin=0, vmax=1)],
+                 px_per_cell=8, fps=15, title="evosim · Conway's Life")
+        return
+
+    h = args.height or 20
+    w = args.width or 40
+    steps = args.steps or 60
+    sim = build(h, w, seed=args.seed)
+    grid0 = random_grid(jax.random.key(args.seed), h, w, density=args.density)
     state = initial_state(sim, grid0)
     final, hist = run_history(sim, state, steps)
     pops = population_series(hist)

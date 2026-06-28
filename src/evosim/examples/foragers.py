@@ -183,16 +183,35 @@ def initial_state(sim: Simulation, cfg: ForagerConfig, key: jax.Array) -> State:
     return s.replace(next_id=jnp.asarray(cfg.n_initial, dtype=jnp.int32))
 
 
-def main() -> None:
+def main(argv=None) -> None:
+    import argparse
+
+    p = argparse.ArgumentParser(description="Evolving foragers (evosim demo)")
+    p.add_argument("--view", action="store_true", help="live PyGame visualization")
+    p.add_argument("--steps", type=int, default=None)
+    p.add_argument("--seed", type=int, default=0)
+    args = p.parse_args(argv)
+
     cfg = ForagerConfig()
-    sim = build(cfg, seed=0)
-    state = initial_state(sim, cfg, jax.random.key(0))
+    sim = build(cfg, seed=args.seed)
+    state = initial_state(sim, cfg, jax.random.key(args.seed))
+
+    if args.view:
+        from ..viz import AgentRenderer, GridRenderer, run_live
+        layers = [
+            GridRenderer("food", cmap="fire", vmin=0.0, vmax=cfg.food_max),
+            AgentRenderer("position", color_by="energy", cmap="viridis", vmin=0.0, vmax=2.0),
+        ]
+        run_live(sim, state, n_steps=args.steps, layers=layers, px_per_cell=14, fps=30,
+                 title="evosim · foragers",
+                 caption_fn=lambda s: f"evosim · foragers  pop={int(s.n_alive)} tick={int(s.tick)}")
+        return
 
     def record(s):
         from .. import metrics
         return {"pop": s.n_alive, "eff": metrics.masked_mean(s["genome"][:, 0], s.alive)}
 
-    steps = 400
+    steps = args.steps or 400
     final, recs = sim.run(state, steps, record=record)
     pop = np.asarray(recs["pop"])
     eff = np.asarray(recs["eff"])
