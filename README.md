@@ -76,6 +76,15 @@ uv run python -m evosim.examples.foragers      # evolving foragers (full ALife, 
 uv run python -m evosim.examples.ga_benchmark  # classic GA (explicit-fitness optimization)
 ```
 
+Or use the Windows launchers in [`scripts/`](scripts) (PowerShell `.ps1` or `.bat`), which work
+from any directory and pass through extra args:
+
+```powershell
+scripts\run_conway.ps1            # or scripts\run_conway.bat
+scripts\run_foragers.ps1
+scripts\run_ga_benchmark.ps1
+```
+
 - **conway** — the smallest viable sim: one environment field + the `life_like` cellular-automaton
   system on a toric grid. No agents.
 - **foragers** — agents seek food via taxis on a regrowing food field, contend for it (lottery
