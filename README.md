@@ -112,9 +112,11 @@ uv run python -m evosim.examples.foragers --view        # food heatmap + agents 
 uv run python -m evosim.examples.ga_benchmark --view    # GA population in genome space + curve
 ```
 
-The GA viewer shows the *non-spatial* case: the population scattered in genome space (dims 0,1),
-colored by fitness, with the optimum marked and a live best-objective convergence curve — built
-with `ScatterRenderer` via `run_live(frame_fn=...)`.
+The foragers viewer draws the **food field as the background** and **agents as distinct dots**
+on top (via `run_live(frame_fn=<field image>, overlay_fn=agent_overlay(...))`), so agents are
+easy to tell apart from grid cells. The GA viewer shows the *non-spatial* case: the population
+scattered in genome space (dims 0,1), colored by fitness, with the optimum marked and a live
+best-objective convergence curve — built with `ScatterRenderer` via `run_live(frame_fn=...)`.
 
 Or use the dedicated viewer launchers in [`scripts/`](scripts) (PowerShell `.ps1` or `.bat`;
 extra args pass through, e.g. `--steps`, `--seed`):

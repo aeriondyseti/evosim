@@ -23,14 +23,14 @@ from typing import Callable, Sequence
 
 import numpy as np
 
-from ..viz import AgentRenderer, GridRenderer, compose
+from ..viz import AgentRenderer, GridRenderer, apply_colormap, compose
 
 try:  # optional dependency
     import pygame
 except ImportError:  # pragma: no cover - exercised only when pygame is absent
     pygame = None
 
-__all__ = ["run_live", "PygameViewer"]
+__all__ = ["run_live", "PygameViewer", "agent_overlay"]
 
 
 def _require_pygame() -> None:
@@ -81,6 +81,60 @@ def _draw_panel(screen, font, lines, pos=(8, 8), pad=6,
         panel.blit(s, (pad, y))
         y += s.get_height()
     screen.blit(panel, pos)
+
+
+def agent_overlay(world, position: str = "position", color_by: str | None = None,
+                  cmap: str = "viridis", color: tuple[int, int, int] = (255, 255, 255),
+                  radius_frac: float = 0.4, min_radius: int = 2,
+                  outline: tuple[int, int, int] | None = (0, 0, 0),
+                  vmin=None, vmax=None, max_agents: int = 20000) -> Callable:
+    """Build an ``overlay_fn`` that draws alive agents as dots over a (field) background.
+
+    Pair with ``run_live(frame_fn=<field image>, overlay_fn=agent_overlay(...))`` so agents are
+    visually distinct from grid cells: each agent is a small outlined circle at its cell center,
+    optionally colored by a component (``color_by``). For very large populations only the first
+    ``max_agents`` alive are drawn (a logged cap would belong here in a real app).
+    """
+    import numpy as np
+
+    def overlay(screen, state, size):
+        win_w, win_h = size
+        h, w = world.shape
+        cw, ch = win_w / w, win_h / h
+        radius = max(min_radius, int(min(cw, ch) * radius_frac))
+
+        alive = np.asarray(state.alive)
+        pos = np.asarray(state[position])
+        rows = (pos[:, 0] % h)[alive]
+        cols = (pos[:, 1] % w)[alive]
+        n = rows.shape[0]
+        if n == 0:
+            return
+        if n > max_agents:
+            rows, cols, n = rows[:max_agents], cols[:max_agents], max_agents
+
+        if color_by is not None:
+            vals = np.asarray(state[color_by])
+            vals = vals[:, 0] if vals.ndim > 1 else vals
+            vals = vals[alive][:n].astype(np.float64)
+            lo = float(vals.min()) if vmin is None else float(vmin)
+            hi = float(vals.max()) if vmax is None else float(vmax)
+            norm = np.clip((vals - lo) / ((hi - lo) or 1.0), 0.0, 1.0)
+            colors = apply_colormap(norm, cmap)
+        else:
+            colors = None
+
+        rr = rows.tolist()
+        cc = cols.tolist()
+        for i in range(n):
+            cx = int((cc[i] + 0.5) * cw)
+            cy = int((rr[i] + 0.5) * ch)
+            fill = tuple(int(x) for x in colors[i]) if colors is not None else color
+            if outline is not None:
+                pygame.draw.circle(screen, outline, (cx, cy), radius + 1)
+            pygame.draw.circle(screen, fill, (cx, cy), radius)
+
+    return overlay
 
 
 def run_live(sim, state, n_steps: int | None = None, layers: Sequence | None = None,

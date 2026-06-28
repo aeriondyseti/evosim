@@ -20,7 +20,8 @@ from evosim import rng  # noqa: E402
 from evosim.recorders import run_recorded  # noqa: E402
 from evosim.viz import AgentRenderer, GridRenderer  # noqa: E402
 from evosim.examples import conway, foragers, ga_benchmark  # noqa: E402
-from evosim.examples.pygame_viewer import PygameViewer, run_live  # noqa: E402
+from evosim.viz import compose  # noqa: E402
+from evosim.examples.pygame_viewer import PygameViewer, agent_overlay, run_live  # noqa: E402
 
 
 def test_run_live_conway_headless():
@@ -39,6 +40,20 @@ def test_run_live_foragers_headless():
     layers = [GridRenderer("food", cmap="fire", vmin=0, vmax=cfg.food_max),
               AgentRenderer("position", color_by="energy", cmap="viridis")]
     final = run_live(sim, state, n_steps=4, layers=layers, px_per_cell=4, fps=1000)
+    assert int(final.tick) == 4
+
+
+def test_foragers_field_background_with_agent_dots_overlay():
+    # Food field as frame_fn background; agents drawn as dots via agent_overlay.
+    cfg = foragers.ForagerConfig(height=12, width=12, capacity=128, n_initial=30)
+    sim = foragers.build(cfg)
+    state = foragers.initial_state(sim, cfg, jax.random.key(0))
+    field = GridRenderer("food", cmap="fire", vmin=0, vmax=cfg.food_max)
+    final = run_live(
+        sim, state, n_steps=4,
+        frame_fn=lambda s: compose([field], s, sim.world),
+        overlay_fn=agent_overlay(sim.world, color_by="energy", cmap="viridis", vmin=0, vmax=2),
+        px_per_cell=8, fps=1000)
     assert int(final.tick) == 4
 
 

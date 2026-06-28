@@ -19,7 +19,9 @@ Last updated: 2026-06-28 (iteration 12 — PHASE 7 DONE; PROJECT COMPLETE ✅)
   as an example of consuming the viz renderers, NOT in the library.
 - `demos` extra (pygame) in pyproject — renamed from `viz` so installing the renderers never
   pulls a GUI toolkit. ALL THREE demos take `--view`:
-    - conway: life heatmap; foragers: food heatmap + agents-by-energy.
+    - conway: life heatmap; foragers: food field as BACKGROUND image (frame_fn) + agents as
+      distinct DOTS on top via agent_overlay() helper (pygame circles, color-by-energy, outlined)
+      so agents are visually separable from cells.
     - ga_benchmark.run_view: NON-SPATIAL viz — population in genome space (dims 0,1) colored by
       fitness, optimum marker + best-objective convergence curve (frame_fn + ScatterRenderer).
 - launchers: scripts/run_{conway,foragers,ga_benchmark}_view.{ps1,bat}.

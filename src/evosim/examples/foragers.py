@@ -197,15 +197,17 @@ def main(argv=None) -> None:
     state = initial_state(sim, cfg, jax.random.key(args.seed))
 
     if args.view:
-        from ..viz import AgentRenderer, GridRenderer
-        from .pygame_viewer import run_live
-        layers = [
-            GridRenderer("food", cmap="fire", vmin=0.0, vmax=cfg.food_max),
-            AgentRenderer("position", color_by="energy", cmap="viridis", vmin=0.0, vmax=2.0),
-        ]
-        run_live(sim, state, n_steps=args.steps, layers=layers, px_per_cell=14, fps=30,
-                 title="evosim · foragers",
-                 caption_fn=lambda s: f"evosim · foragers  pop={int(s.n_alive)} tick={int(s.tick)}")
+        from ..viz import GridRenderer, compose
+        from .pygame_viewer import agent_overlay, run_live
+        # Food field as the background image; agents drawn as distinct dots on top.
+        field = GridRenderer("food", cmap="fire", vmin=0.0, vmax=cfg.food_max)
+        run_live(
+            sim, state, n_steps=args.steps,
+            frame_fn=lambda s: compose([field], s, sim.world),
+            overlay_fn=agent_overlay(sim.world, color_by="energy", cmap="viridis",
+                                     vmin=0.0, vmax=2.0, radius_frac=0.42),
+            px_per_cell=16, fps=30, title="evosim · foragers",
+            caption_fn=lambda s: f"evosim · foragers  pop={int(s.n_alive)} tick={int(s.tick)}")
         return
 
     def record(s):
