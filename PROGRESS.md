@@ -4,7 +4,7 @@
 > (context may have been compacted). Update it after every chunk of work.
 > Source of truth for design = `SPEC.md`.
 
-Last updated: 2026-06-28 (iteration 5 — system + scheduler done; PHASE 1 COMPLETE)
+Last updated: 2026-06-28 (iteration 6 — world layer done; PHASE 2 COMPLETE)
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +
@@ -71,9 +71,12 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [x] `state.py` extended with environment `fields` (grids/layers) + tests (4 tests)
 
 ### Phase 2 — World
-- [ ] `world/base.py` (World protocol)
-- [ ] `world/grid.py` (toric grid + cell/Moore queries, cell binning) + tests
-- [ ] `world/fields.py` (field layers + diffusion/regrowth/decay) + tests
+- [x] `world/base.py` (World ABC: ndim/shape/wrap)
+- [x] `world/grid.py` (ToricGrid2D: cell_id/move/cell_counts/scatter+gather_field/
+      moore_sum/von_neumann_sum/accumulate_neighborhood/random_positions) + tests (13)
+- [x] `world/fields.py` (decay/regrow/diffuse/map_field/life_like) + tests (6)
+      NOTE: Conway rule validated here (life_like blinker oscillates, block still) —
+      conway demo will just wire ToricGrid2D + life_like("cells").
 
 ### Phase 3 — Genetics & interactions
 - [ ] `operators/mutation.py` + tests
@@ -101,6 +104,10 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [ ] Full `uv run pytest` green; final review pass
 
 ## Running log (newest first)
+- iter 6 (world; PHASE 2 DONE): `world/base.py` (World ABC), `world/grid.py` (ToricGrid2D
+  cell-binning + toric neighborhood ops, 13 tests), `world/fields.py` (decay/regrow/diffuse/
+  map_field/life_like, 6 tests). Conway rule already validated via life_like. world exported
+  in __init__. 93 tests pass. Next: Phase 3 genetics — operators/{mutation,crossover,selection}.
 - iter 5 (system + scheduler; PHASE 1 DONE): added env `fields` dict to State (needed for
   agent-less sims like Conway). `system.py` (System/Context/@system, DEFAULT_STAGES =
   sense/decide/act/interact/spawn/death/environment/cleanup). `scheduler.py` (stage-ordered
