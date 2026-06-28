@@ -44,9 +44,9 @@ example runners and the viewer are just optional consumers of the core.
 | Package name | **`evosim`** |
 | Python / core deps | **Python ≥3.11**; hard deps `jax`, `numpy`; optional `zarr`/`pyarrow` (recorders) |
 | Tooling | **uv** for env / deps / running (`uv init`, `uv add`, `uv run`) |
-| Dev platform | **Windows + CPU JAX** for dev/test; GPU perf validated on Linux/WSL2 later |
+| Dev platform | **Linux/WSL2** canonical (CPU + NVIDIA GPU via `jax[cuda12]`); originally CPU-only dev on Windows |
 | Viewer toolkit | **moderngl** (deferred build) |
-| Repo | standalone git repo at `evosim-framework` |
+| Repo | standalone git repo **`evosim`** (GitHub: `aeriondyseti/evosim`, public) |
 
 ---
 
@@ -233,14 +233,15 @@ Proves the whole stack on one path:
   (recorders); viewer deps optional.
 - **Tooling**: **uv** manages the environment, dependencies, and task running
   (`uv init`, `uv add`, `uv run pytest`, etc.). `pyproject.toml` is the single source of truth.
-- **Dev platform**: developed/tested on **Windows with CPU `jaxlib`** (JAX has no native
-  Windows GPU build). XLA is the same backend on GPU, so architecture is unaffected; the
-  large-GPU performance targets in §11 are validated later on Linux/WSL2. CPU is sufficient
-  for correctness, determinism (same-device bit-exact), and the demos.
+- **Dev platform**: now **Linux/WSL2** is canonical — CPU plus NVIDIA GPU via the `gpu` extra
+  (`jax[cuda12]`); the §11 large-population GPU targets are validated there (RTX 5060 Ti /
+  4060 Ti, ~70× CPU). Originally developed/tested on **Windows with CPU `jaxlib`** (JAX has no
+  native Windows GPU build); XLA is the same backend on GPU, so architecture is unaffected. CPU
+  is sufficient for correctness, determinism (same-device bit-exact), and the demos.
 - **Package name**: **`evosim`**.
 - **Viewer toolkit**: **moderngl** (build deferred; minimal matplotlib/notebook view first).
-- **Repo location**: standalone git repo initialized at `evosim-framework` (independent of
-  the surrounding rpstack working tree).
+- **Repo location**: standalone git repo published at **`github.com/aeriondyseti/evosim`**
+  (public). Originally bootstrapped on Windows; the Linux/WSL2 checkout is now canonical.
 
 ---
 

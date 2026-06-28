@@ -39,13 +39,15 @@ Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with 
 determinism golden-masters alongside. Stop only when library + 3 demos are done and `uv run pytest` passes.
 
 ## Environment notes (important for resuming)
-- Repo: `D:\Development\evosim-framework` (standalone git repo). Always use absolute paths;
-  the harness may pin cwd elsewhere.
+- Repo: `~/dev/evosim-framework` on Linux/WSL2 — now canonical (the Windows copy at
+  `D:\Development\evosim-framework` was migrated here and deleted). Published at
+  `github.com/aeriondyseti/evosim` (origin/main). Always use absolute paths; the harness may
+  pin cwd elsewhere. (Local dir name is still `evosim-framework`; the package/repo is `evosim`.)
 - Tooling: **uv**. Run things with `uv run ...` (e.g. `uv run pytest`). Add deps with `uv add`.
-- Python 3.13 (>=3.11 required). JAX = **CPU only** on Windows (no native GPU) — correctness &
-  determinism dev here. **GPU validated on Linux/WSL2** (`uv sync --extra gpu`, jax[cuda12] /
-  CUDA 12.9): both RTX 5060 Ti (sm_120) and 4060 Ti run; full suite green on GPU; foragers_large
-  ~60–70x CPU (see SCALE PoC line above). Same-device bit-exact; CPU vs GPU differ per SPEC.
+- Python 3.13 (>=3.11 required). JAX runs on **CPU on Windows** (no native GPU build) and on
+  **GPU on Linux/WSL2** (`uv sync --extra gpu`, jax[cuda12] / CUDA 12.9): both RTX 5060 Ti
+  (sm_120) and 4060 Ti run; full suite green on GPU; foragers_large ~70x CPU (see SCALE PoC line
+  above). Same-device bit-exact; CPU vs GPU differ per SPEC.
 - Determinism: use JAX counter-based RNG (threefry). fp32 default; allow per-field dtypes.
   For fp64 fields, enable `jax.config.update("jax_enable_x64", True)`.
 
