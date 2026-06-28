@@ -98,7 +98,9 @@ tests/             unit tests per module + determinism golden-masters + perf smo
       + tests (7). Library is now feature-complete. Exported Simulation.
 
 ### Phase 6 — Demos (vertical validation)
-- [ ] `examples/conway.py` + test (known-pattern golden-master, e.g. blinker/glider)
+- [x] `examples/conway.py` + test — glider/blinker/block golden-masters PASS (6 tests).
+      NOTE: demos live in src/evosim/examples/ (importable as evosim.examples.*, runnable
+      via `python -m evosim.examples.conway`).
 - [ ] `examples/foragers.py` + test (runs, population dynamics, evolution signal)
 - [ ] `examples/ga_benchmark.py` + test (fitness improves over generations)
 
