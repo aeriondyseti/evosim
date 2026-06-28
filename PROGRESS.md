@@ -4,7 +4,7 @@
 > (context may have been compacted). Update it after every chunk of work.
 > Source of truth for design = `SPEC.md`.
 
-Last updated: 2026-06-28 (iteration 2 — schema done)
+Last updated: 2026-06-28 (iteration 3 — rng + state done)
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +
@@ -63,8 +63,8 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 
 ### Phase 1 — Core engine
 - [x] `schema.py` (Field/Schema/dtypes/SoA alloc) + tests (21 tests pass)
-- [ ] `rng.py` (counter-based key derivation) + tests
-- [ ] `state.py` (State PyTree, registration as JAX pytree) + tests
+- [x] `rng.py` (counter-based key derivation) + tests (9 tests)
+- [x] `state.py` (State PyTree, registration as JAX pytree) + tests (11 tests)
 - [ ] `backend.py` (abstraction + JAX backend) + tests
 - [ ] `population.py` (grow/spawn/death/compaction, deterministic claim) + tests
 - [ ] `system.py` + `scheduler.py` (phased stages, tick via scan) + tests
@@ -100,6 +100,10 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [ ] Full `uv run pytest` green; final review pass
 
 ## Running log (newest first)
+- iter 3 (rng + state): `rng.py` counter-based keys (9 tests) committed. `state.py` immutable
+  State PyTree (components/tick/next_id + static schema/capacity), jit/vmap-safe, fingerprint
+  for golden-masters (11 tests). 41 total tests pass. Decision: RNG root key lives in the
+  Simulation, not State (derived from root+tick). Next: backend.py abstraction (JAX first).
 - iter 2 (schema): pyproject finalized (Apache-2.0, py>=3.11, numpy>=1.26 floor since numpy 2.5
   dropped 3.11), LICENSE + .gitignore added. `schema.py` (Field/Schema/SoA, x64 guard) +
   21 tests passing. Recorders extra (zarr/pyarrow) resolves. Next: rng.py (counter-based keys).
