@@ -26,7 +26,10 @@ Last updated: 2026-06-28 (iteration 12 — PHASE 7 DONE; PROJECT COMPLETE ✅)
       fitness, optimum marker + best-objective convergence curve (frame_fn + ScatterRenderer).
 - SCALE PoC: examples/foragers_large.py — reuses foragers sim at ~1e6 agents on a 1024x1024
   grid, rasterized rendering (GridRenderer food + AgentRenderer scatter, O(cells), one blit/
-  frame). CPU bench: ~8 ticks/s @ 1M agents (~8M agent-ticks/s). `--headless-bench N` for timing.
+  frame). Bench @ 1M agents: ~8 ticks/s CPU; 562 ticks/s on RTX 5060 Ti (16GB), 485 on RTX
+  4060 Ti (8GB) via JAX CUDA on WSL2 (~70x CPU). 4M agents/2048 grid: 83 ticks/s (334M
+  agent-ticks/s) on the 5060 Ti. `--headless-bench N` for timing. (Set CUDA_DEVICE_ORDER=
+  PCI_BUS_ID so CUDA_VISIBLE_DEVICES matches nvidia-smi; default is FASTEST_FIRST.)
 - launchers: scripts/run_{conway,foragers,ga_benchmark,foragers_large}_view.{ps1,bat}.
 - tests: test_viz.py (renderers incl scatter, no pygame) + test_example_viewer.py (pygame +
   GA viewer, headless via SDL dummy). 184 tests pass. Determinism/fast path untouched.
@@ -40,7 +43,9 @@ determinism golden-masters alongside. Stop only when library + 3 demos are done 
   the harness may pin cwd elsewhere.
 - Tooling: **uv**. Run things with `uv run ...` (e.g. `uv run pytest`). Add deps with `uv add`.
 - Python 3.13 (>=3.11 required). JAX = **CPU only** on Windows (no native GPU) — correctness &
-  determinism dev here; GPU perf validated on Linux/WSL2 later. This does not change architecture.
+  determinism dev here. **GPU validated on Linux/WSL2** (`uv sync --extra gpu`, jax[cuda12] /
+  CUDA 12.9): both RTX 5060 Ti (sm_120) and 4060 Ti run; full suite green on GPU; foragers_large
+  ~60–70x CPU (see SCALE PoC line above). Same-device bit-exact; CPU vs GPU differ per SPEC.
 - Determinism: use JAX counter-based RNG (threefry). fp32 default; allow per-field dtypes.
   For fp64 fields, enable `jax.config.update("jax_enable_x64", True)`.
 

@@ -102,9 +102,10 @@ def _bench(n_agents: int, grid: int, n_steps: int, seed: int) -> None:
         state = tick(state)
     jax.block_until_ready(state.components["energy"])
     dt = time.perf_counter() - t0
+    backend = jax.default_backend().upper()
     print(f"foragers_large bench: {n_agents:,} agents on {grid}x{grid}, {n_steps} ticks "
           f"in {dt:.2f}s -> {n_steps / dt:.1f} ticks/s, "
-          f"{n_agents * n_steps / dt / 1e6:.1f}M agent-ticks/s (CPU)")
+          f"{n_agents * n_steps / dt / 1e6:.1f}M agent-ticks/s ({backend})")
 
 
 if __name__ == "__main__":

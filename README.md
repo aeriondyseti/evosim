@@ -40,7 +40,9 @@ The `evosim.viz` renderers are pure-numpy and need no extra; only the interactiv
 viewers require `--extra demos`.
 
 JAX has no native Windows GPU build, so development/testing here runs on CPU. The architecture
-is backend-agnostic (XLA), so the same code runs on GPU/TPU where a CUDA/TPU `jaxlib` is available.
+is backend-agnostic (XLA), so the same code runs on GPU/TPU where a CUDA/TPU `jaxlib` is
+available. On Linux/WSL2, `uv sync --extra gpu` installs `jax[cuda12]` and the same code runs on
+the GPU — validated on NVIDIA RTX 5060 Ti / 4060 Ti (see *Performance*).
 
 ## Quickstart
 
@@ -143,8 +145,9 @@ scripts\run_foragers_large_view.ps1 --agents 250000 --grid 512       # launcher 
 ```
 
 It reuses the foragers simulation at scale and composites `GridRenderer` (food) +
-`AgentRenderer` (agents). On a CPU laptop it sustains **~8 ticks/s at 1,000,000 agents
-(≈8M agent-ticks/s)** — the same code runs far faster on GPU.
+`AgentRenderer` (agents). At 1,000,000 agents it sustains **~8 ticks/s on CPU (≈8M
+agent-ticks/s)** and **~560 ticks/s on GPU (≈560M agent-ticks/s, RTX 5060 Ti)** — see
+*Performance*.
 
 The example viewers build on the existing host-loop runner, so the headless fast path and
 determinism are untouched:
@@ -183,8 +186,15 @@ Key modules: `schema`, `state`, `rng`, `backend`, `population`, `system`, `sched
 
 The hot loop forbids per-entity Python: systems operate on batched SoA arrays and the whole tick
 is JIT-compiled. The CPU smoke test (`tests/test_perf_smoke.py`) sustains tens of millions of
-agent-ticks/second on a laptop; the large-population GPU targets in [`SPEC.md`](SPEC.md) are
-validated separately on Linux/WSL2.
+agent-ticks/second on a laptop. On GPU (Linux/WSL2, `uv sync --extra gpu`) the `foragers_large`
+PoC runs **~70× faster than CPU**: at 1M agents, 562M agent-ticks/s on an RTX 5060 Ti (16 GB,
+Blackwell) and 485M on an RTX 4060 Ti (8 GB, Ada); at 4M agents on a 2048×2048 grid, 334M
+agent-ticks/s on the 5060 Ti. The full test suite passes on GPU. Determinism is same-device
+bit-exact (counter-based RNG); CPU and GPU agree statistically but not bit-for-bit (different
+reduction order), as noted in [`SPEC.md`](SPEC.md).
+
+> Multi-GPU note: CUDA's default device order is `FASTEST_FIRST`, so `CUDA_VISIBLE_DEVICES`
+> indices need not match `nvidia-smi`. Set `CUDA_DEVICE_ORDER=PCI_BUS_ID` to make them line up.
 
 ## Development
 
