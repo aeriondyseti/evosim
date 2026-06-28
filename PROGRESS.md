@@ -4,7 +4,7 @@
 > (context may have been compacted). Update it after every chunk of work.
 > Source of truth for design = `SPEC.md`.
 
-Last updated: 2026-06-28 (iteration 3 — rng + state done)
+Last updated: 2026-06-28 (iteration 4 — backend + population done)
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +
@@ -65,8 +65,8 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [x] `schema.py` (Field/Schema/dtypes/SoA alloc) + tests (21 tests pass)
 - [x] `rng.py` (counter-based key derivation) + tests (9 tests)
 - [x] `state.py` (State PyTree, registration as JAX pytree) + tests (11 tests)
-- [ ] `backend.py` (abstraction + JAX backend) + tests
-- [ ] `population.py` (grow/spawn/death/compaction, deterministic claim) + tests
+- [x] `backend.py` (abstraction + JAX backend) + tests (8 tests)
+- [x] `population.py` (grow/spawn/death/compaction, deterministic claim) + tests (10 tests)
 - [ ] `system.py` + `scheduler.py` (phased stages, tick via scan) + tests
 
 ### Phase 2 — World
@@ -100,6 +100,11 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [ ] Full `uv run pytest` green; final review pass
 
 ## Running log (newest first)
+- iter 4 (backend + population): `backend.py` Backend/JAXBackend (jit/scan/vmap/xp/devices) +
+  registry/use_backend (8 tests). `population.py` deterministic spawn (free-slot claim via
+  argsort+cumsum, overflow drop, contiguous ids), kill, compact (stable), grow/grow_to_fit
+  (host-level, doubling) (10 tests). 59 total pass. Next: system.py + scheduler.py
+  (phased stages: sense->decide->act->spawn/death->environment->cleanup; tick via scan).
 - iter 3 (rng + state): `rng.py` counter-based keys (9 tests) committed. `state.py` immutable
   State PyTree (components/tick/next_id + static schema/capacity), jit/vmap-safe, fingerprint
   for golden-masters (11 tests). 41 total tests pass. Decision: RNG root key lives in the
