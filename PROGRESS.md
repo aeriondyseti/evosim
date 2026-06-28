@@ -24,7 +24,10 @@ Last updated: 2026-06-28 (iteration 12 — PHASE 7 DONE; PROJECT COMPLETE ✅)
       so agents are visually separable from cells.
     - ga_benchmark.run_view: NON-SPATIAL viz — population in genome space (dims 0,1) colored by
       fitness, optimum marker + best-objective convergence curve (frame_fn + ScatterRenderer).
-- launchers: scripts/run_{conway,foragers,ga_benchmark}_view.{ps1,bat}.
+- SCALE PoC: examples/foragers_large.py — reuses foragers sim at ~1e6 agents on a 1024x1024
+  grid, rasterized rendering (GridRenderer food + AgentRenderer scatter, O(cells), one blit/
+  frame). CPU bench: ~8 ticks/s @ 1M agents (~8M agent-ticks/s). `--headless-bench N` for timing.
+- launchers: scripts/run_{conway,foragers,ga_benchmark,foragers_large}_view.{ps1,bat}.
 - tests: test_viz.py (renderers incl scatter, no pygame) + test_example_viewer.py (pygame +
   GA viewer, headless via SDL dummy). 184 tests pass. Determinism/fast path untouched.
 

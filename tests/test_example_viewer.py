@@ -19,7 +19,7 @@ pytest.importorskip("pygame")
 from evosim import rng  # noqa: E402
 from evosim.recorders import run_recorded  # noqa: E402
 from evosim.viz import AgentRenderer, GridRenderer  # noqa: E402
-from evosim.examples import conway, foragers, ga_benchmark  # noqa: E402
+from evosim.examples import conway, foragers, foragers_large, ga_benchmark  # noqa: E402
 from evosim.viz import compose  # noqa: E402
 from evosim.examples.pygame_viewer import PygameViewer, agent_overlay, run_live  # noqa: E402
 
@@ -70,6 +70,12 @@ def test_run_live_legend_toggle_runs():
     a = run_live(sim, state, n_steps=2, px_per_cell=6, fps=1000, show_legend=True)
     b = run_live(sim, state, n_steps=2, px_per_cell=6, fps=1000, show_legend=False)
     assert int(a.tick) == 2 and int(b.tick) == 2
+
+
+def test_foragers_large_view_headless():
+    # Rasterized large-scale viewer path (small numbers for test speed).
+    final = foragers_large.run_view_large(n_agents=2000, grid=64, window=128, steps=3)
+    assert int(final.tick) == 3
 
 
 def test_ga_run_view_headless():

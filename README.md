@@ -130,7 +130,23 @@ scripts\run_ga_benchmark_view.ps1
 Controls (also shown in an on-screen legend, toggle with **H**): **SPACE** pause · **S**/**.**
 step one tick while paused · **↑/→** faster · **↓/←** slower · **ESC/Q** quit.
 
-The example viewer builds on the existing host-loop runner, so the headless fast path and
+### Scaling: the million-agent PoC
+
+The foragers/GA viewers above draw agents as per-agent dots/points (great up to ~thousands).
+For **millions**, use the *rasterized* path — agents scattered into the grid via
+`AgentRenderer` (O(cells), one image blit/frame, independent of population):
+
+```bash
+uv run python -m evosim.examples.foragers_large                      # ~1e6 agents, 1024x1024 grid
+uv run python -m evosim.examples.foragers_large --headless-bench 10  # throughput, no window
+scripts\run_foragers_large_view.ps1 --agents 250000 --grid 512       # launcher (args pass through)
+```
+
+It reuses the foragers simulation at scale and composites `GridRenderer` (food) +
+`AgentRenderer` (agents). On a CPU laptop it sustains **~8 ticks/s at 1,000,000 agents
+(≈8M agent-ticks/s)** — the same code runs far faster on GPU.
+
+The example viewers build on the existing host-loop runner, so the headless fast path and
 determinism are untouched:
 
 ```python
