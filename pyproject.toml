@@ -27,6 +27,9 @@ recorders = ["zarr>=2.18", "pyarrow>=16"]
 # The evosim.viz renderers are pure-numpy (no extra needed). PyGame is only required by the
 # interactive example viewers (evosim.examples.pygame_viewer), so it lives in its own extra.
 demos = ["pygame>=2.5"]
+# GPU (NVIDIA CUDA 12) jaxlib. Linux-only (incl. WSL2); ignored on native Windows, which has
+# no GPU jaxlib. Use with:  uv sync --extra gpu   (inside a WSL2 distro)
+gpu = ["jax[cuda12]>=0.10.2; sys_platform == 'linux'"]
 
 [project.urls]
 Homepage = "https://github.com/aeriondyseti/evosim"
