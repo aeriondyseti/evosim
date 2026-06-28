@@ -189,11 +189,13 @@ Interface (per world module):
 
 - Engine is **headless**. A decoupled, read-only viewer consumes state via the host-loop runner
   so rendering never affects determinism or the fast path.
-- **IMPLEMENTED:** `evosim.viz` — a **PyGame** viewer (`run_live`, plus a `PygameViewer`
-  `Recorder`) with pure-numpy renderers (`GridRenderer` field heatmaps, `AgentRenderer` agent
-  rasterization, colormaps). Behind the `viz` extra; Conway/foragers demos take `--view`; runs
-  headless under `SDL_VIDEODRIVER=dummy`. (A native moderngl/GPU window remains possible later
-  for very large scenes.)
+- **IMPLEMENTED:** `evosim.viz` ships **framework-agnostic, dependency-free renderers**
+  (`GridRenderer` field heatmaps, `AgentRenderer` agent rasterization, `compose`, colormaps) —
+  the reusable visualization toolkit. The concrete **PyGame** live viewer (`run_live` +
+  `PygameViewer` `Recorder`) is shipped as an **example** (`evosim.examples.pygame_viewer`),
+  not part of the core, so the library never depends on a GUI toolkit. Behind the `viz` extra;
+  Conway/foragers demos take `--view`; runs headless under `SDL_VIDEODRIVER=dummy`. Other
+  drivers (matplotlib/web/moderngl) can be written against the same renderer API.
 
 ---
 

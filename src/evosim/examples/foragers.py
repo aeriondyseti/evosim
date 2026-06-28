@@ -197,7 +197,8 @@ def main(argv=None) -> None:
     state = initial_state(sim, cfg, jax.random.key(args.seed))
 
     if args.view:
-        from ..viz import AgentRenderer, GridRenderer, run_live
+        from ..viz import AgentRenderer, GridRenderer
+        from .pygame_viewer import run_live
         layers = [
             GridRenderer("food", cmap="fire", vmin=0.0, vmax=cfg.food_max),
             AgentRenderer("position", color_by="energy", cmap="viridis", vmin=0.0, vmax=2.0),

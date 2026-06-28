@@ -96,8 +96,11 @@ scripts\run_ga_benchmark.ps1
 
 ## Visualization (optional)
 
-A decoupled, read-only PyGame viewer ships in `evosim.viz` (install `evosim[viz]`). The Conway
-and foragers demos accept `--view`:
+The library ships **framework-agnostic, dependency-free renderers** in `evosim.viz`
+(`GridRenderer`, `AgentRenderer`, `compose`, colormaps) that turn a `State` into RGB images —
+independent of what eventually paints them. A concrete **live PyGame viewer is shipped as an
+example** (`evosim.examples.pygame_viewer`), the same way Conway demonstrates the core engine;
+it requires the optional `viz` extra. The Conway and foragers demos accept `--view`:
 
 ```bash
 uv sync --extra viz
@@ -116,18 +119,22 @@ scripts\run_foragers_view.ps1
 Controls (also shown in an on-screen legend, toggle with **H**): **SPACE** pause · **S**/**.**
 step one tick while paused · **↑/→** faster · **↓/←** slower · **ESC/Q** quit.
 
-It builds on the existing host-loop runner, so the headless fast path and determinism are
-untouched. The renderers are pure-numpy and dependency-free; only the window needs pygame:
+The example viewer builds on the existing host-loop runner, so the headless fast path and
+determinism are untouched:
 
 ```python
-from evosim.viz import run_live, GridRenderer, AgentRenderer
+from evosim.viz import GridRenderer, AgentRenderer          # library: renderers (no GUI dep)
+from evosim.examples.pygame_viewer import run_live          # example: the PyGame driver
+
 run_live(sim, state, n_steps=None,
          layers=[GridRenderer("food", cmap="fire"),
                  AgentRenderer("position", color_by="energy", cmap="viridis")])
 ```
 
-`PygameViewer` is also a `Recorder`, so a window can be driven by `recorders.run_recorded`
-alongside other recorders. Everything runs headless under `SDL_VIDEODRIVER=dummy` (CI).
+The example's `PygameViewer` is also a `Recorder`, so a window can be driven by
+`recorders.run_recorded` alongside other recorders. Everything runs headless under
+`SDL_VIDEODRIVER=dummy` (CI). Because the renderers are GUI-agnostic, you can write your own
+matplotlib / web / moderngl driver against the same `GridRenderer`/`AgentRenderer` API.
 
 ## Architecture (one tick)
 

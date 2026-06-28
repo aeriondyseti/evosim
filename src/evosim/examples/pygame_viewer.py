@@ -1,7 +1,12 @@
-"""PyGame live viewer (optional; requires ``evosim[viz]``).
+"""Example: a live PyGame viewer built on top of the ``evosim.viz`` renderers.
 
-A decoupled, read-only consumer of the engine (per SPEC): it steps the simulation on the host
-loop and draws each frame, so determinism and the headless fast path are untouched.
+This is an *example integration*, not part of the core library — it shows how to consume the
+framework-agnostic renderers (`evosim.viz`) plus the host-loop runner to drive a specific GUI
+toolkit (PyGame). The same renderers could just as well feed matplotlib, a web canvas, or
+moderngl. Requires the optional ``viz`` extra (``uv sync --extra viz``).
+
+It's a decoupled, read-only consumer of the engine (per SPEC): it steps the simulation on the
+host loop and draws each frame, so determinism and the headless fast path are untouched.
 
 - :func:`run_live` — open a window and run the sim, compositing renderer layers each frame.
   An on-screen legend (toggle ``H``) documents the controls: SPACE pause, S/. step one tick
@@ -16,7 +21,7 @@ from __future__ import annotations
 
 from typing import Callable, Sequence
 
-from .render import AgentRenderer, GridRenderer, compose
+from ..viz import AgentRenderer, GridRenderer, compose
 
 try:  # optional dependency
     import pygame
@@ -29,8 +34,8 @@ __all__ = ["run_live", "PygameViewer"]
 def _require_pygame() -> None:
     if pygame is None:
         raise ImportError(
-            "PyGame is required for the viewer. Install it with `uv sync --extra viz` "
-            "(or `pip install evosim[viz]`)."
+            "PyGame is required for this example viewer. Install it with "
+            "`uv sync --extra viz` (or `pip install evosim[viz]`)."
         )
 
 

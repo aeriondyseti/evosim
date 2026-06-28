@@ -1,16 +1,18 @@
-"""Visualization (optional).
+"""Visualization toolkit — framework-agnostic, dependency-free renderers.
 
-Pure-numpy renderers (:class:`GridRenderer`, :class:`AgentRenderer`, :func:`compose`,
-:func:`apply_colormap`) import without any extra dependencies. The PyGame window helpers
-(:func:`run_live`, :class:`PygameViewer`) require ``evosim[viz]`` and raise a clear error if
-pygame is missing.
+These turn a :class:`~evosim.state.State` into RGB images, independent of *what* eventually
+paints them (PyGame, matplotlib, a web canvas, moderngl, ...). They depend only on numpy, so
+``import evosim.viz`` never pulls a GUI dependency.
 
-    from evosim.viz import run_live, GridRenderer, AgentRenderer
+A concrete live viewer built on these renderers ships as an example, not as part of the core:
+see :mod:`evosim.examples.pygame_viewer` (``run_live`` / ``PygameViewer``), which requires the
+optional ``viz`` extra. This mirrors how ``evosim.examples.conway`` demonstrates the core engine.
+
+    from evosim.viz import GridRenderer, AgentRenderer, compose, apply_colormap
 """
 
 from __future__ import annotations
 
-from .pygame_viewer import PygameViewer, run_live
 from .render import COLORMAPS, AgentRenderer, GridRenderer, apply_colormap, compose
 
 __all__ = [
@@ -19,6 +21,4 @@ __all__ = [
     "compose",
     "apply_colormap",
     "COLORMAPS",
-    "run_live",
-    "PygameViewer",
 ]

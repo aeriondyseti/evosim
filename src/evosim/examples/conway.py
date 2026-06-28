@@ -98,7 +98,8 @@ def main(argv=None) -> None:
         w = args.width or 120
         sim = build(h, w, seed=args.seed)
         state = initial_state(sim, random_grid(jax.random.key(args.seed), h, w, args.density))
-        from ..viz import GridRenderer, run_live
+        from ..viz import GridRenderer
+        from .pygame_viewer import run_live
         run_live(sim, state, n_steps=args.steps,
                  layers=[GridRenderer("cells", cmap="green", vmin=0, vmax=1)],
                  px_per_cell=8, fps=15, title="evosim · Conway's Life")

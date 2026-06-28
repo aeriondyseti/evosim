@@ -10,13 +10,15 @@ Last updated: 2026-06-28 (iteration 12 — PHASE 7 DONE; PROJECT COMPLETE ✅)
 ## Post-completion: added PyGame visualization (evosim.viz). 177 tests pass.
 
 ### Visualization (added after core completion)
-- `src/evosim/viz/render.py` — pure-numpy renderers (GridRenderer heatmaps, AgentRenderer
-  rasterization, colormaps, compose); no pygame needed to import.
-- `src/evosim/viz/pygame_viewer.py` — run_live (window loop, pause/speed/quit controls) +
-  PygameViewer Recorder; guarded pygame import (clear error if missing).
-- `viz` extra (pygame) in pyproject. Conway + foragers demos take `--view`.
-- tests/test_viz.py (9 tests, headless via SDL_VIDEODRIVER=dummy). Determinism/fast path
-  untouched (viewer is read-only, uses host-loop). GA is non-spatial -> no view (future).
+- LIBRARY: `src/evosim/viz/render.py` — pure-numpy, GUI-agnostic renderers (GridRenderer
+  heatmaps, AgentRenderer rasterization, colormaps, compose). `evosim.viz` has NO GUI dep.
+- EXAMPLE: `src/evosim/examples/pygame_viewer.py` — run_live (window loop; legend toggle H,
+  pause SPACE, step S/., speed arrows, quit ESC/Q) + PygameViewer Recorder. PyGame is shipped
+  as an example of consuming the viz renderers (like conway demos the core), NOT in the library.
+- `viz` extra (pygame) in pyproject. Conway + foragers demos take `--view` (import run_live from
+  examples.pygame_viewer; renderers from evosim.viz).
+- tests: test_viz.py (renderers, no pygame) + test_example_viewer.py (pygame, headless via
+  SDL dummy). Determinism/fast path untouched (read-only, host-loop). GA non-spatial -> no view.
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +
