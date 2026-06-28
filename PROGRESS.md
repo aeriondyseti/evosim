@@ -4,7 +4,7 @@
 > (context may have been compacted). Update it after every chunk of work.
 > Source of truth for design = `SPEC.md`.
 
-Last updated: 2026-06-28 (iteration 10 — conway + foragers demos done; 2/3 demos)
+Last updated: 2026-06-28 (iteration 11 — ALL 3 DEMOS DONE; PHASE 6 COMPLETE)
 
 ## Mission
 Build the `evosim` library + 3 demos to completion per SPEC.md, bottom-up, with tests +
@@ -105,7 +105,9 @@ tests/             unit tests per module + determinism golden-masters + perf smo
       arbitration, reproduction+mutation, metabolism/death. Emergent selection: mean
       efficiency gene rises ~0 -> 0.06 over 400 steps; pop stabilizes at carrying capacity.
       5 tests (survival, births, selection signal, determinism). VALIDATED.
-- [ ] `examples/ga_benchmark.py` + test (fitness improves over generations)
+- [x] `examples/ga_benchmark.py` + test — generational GA (sphere/rastrigin), explicit-fitness
+      path: evaluate -> elitism + tournament + uniform crossover + gaussian mutation.
+      Sphere converges 4.3 -> 0.024; elitism gives monotonic non-increasing best. 6 tests.
 
 ### Phase 7 — Hardening
 - [ ] Determinism golden-masters across core (same seed -> identical state hash)
@@ -114,6 +116,9 @@ tests/             unit tests per module + determinism golden-masters + perf smo
 - [ ] Full `uv run pytest` green; final review pass
 
 ## Running log (newest first)
+- iter 11 (demo 3; PHASE 6 DONE): ga_benchmark.py (generational GA, sphere converges to
+  ~0.02, rastrigin improves, elitism monotonic; 6 tests). ALL 3 DEMOS COMPLETE. 164 tests
+  pass. Remaining: Phase 7 hardening — perf smoke benchmark, README quickstart, final review.
 - iter 10 (demos 1+2): conway.py (glider/blinker/block golden-masters, 6 tests) + foragers.py
   (full ALife, emergent selection signal confirmed: eff gene 0->0.06; 5 tests). 158 tests pass.
   Demos in src/evosim/examples/. Next: ga_benchmark.py (explicit-fitness GA path), then
