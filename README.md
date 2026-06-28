@@ -103,7 +103,14 @@ and foragers demos accept `--view`:
 uv sync --extra viz
 uv run python -m evosim.examples.conway --view          # live cellular automaton
 uv run python -m evosim.examples.foragers --view        # food heatmap + agents colored by energy
-# or via the launchers (args pass through):  scripts\run_conway.ps1 --view
+```
+
+Or use the dedicated viewer launchers in [`scripts/`](scripts) (PowerShell `.ps1` or `.bat`;
+extra args pass through, e.g. `--steps`, `--seed`):
+
+```powershell
+scripts\run_conway_view.ps1            # or scripts\run_conway_view.bat
+scripts\run_foragers_view.ps1
 ```
 
 Controls: **SPACE** pause · **↑/→** faster · **↓/←** slower · **ESC/Q** quit.
